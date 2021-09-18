@@ -30,6 +30,23 @@ def on_button_pressed_b():
     throttle += 5
 input.on_button_pressed(Button.B, on_button_pressed_b)
 
-def on_forever():
+# To turn on and off the engines
+def on_button_pressed_ab():
+    global arm
+    global throttle
+    throttle = 0
+    if arm == 0:
+        arm = 1
+    else:
+        arm = 0
+input.on_button_pressed(Button.AB, on_button_pressed_ab)
+
+# Shake to stop feature
+def on_gesture_shake():
     pass
+input.on_gesture(Gesture.SHAKE, on_gesture_shake)
+
+def on_forever():
+    basic.show_number(throttle) # To display value on the board
 basic.forever(on_forever)
+
