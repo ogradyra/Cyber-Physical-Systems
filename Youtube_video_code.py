@@ -43,10 +43,34 @@ input.on_button_pressed(Button.AB, on_button_pressed_ab)
 
 # Shake to stop feature
 def on_gesture_shake():
-    pass
+    global arm
+    arm = 0
 input.on_gesture(Gesture.SHAKE, on_gesture_shake)
 
 def on_forever():
-    basic.show_number(throttle) # To display value on the board
+    #basic.show_number(throttle) # To display value on the board
+    pitch = input.rotation(Rotation.PITCH)
+    roll = input.rotation(Rotation.ROLL)
+
+    # To fill a pixel when the motors are turned on_button_pressed
+    basic.clear_screen()
+    if arm == 1:
+        led.plot(0,0) # Top Left Pixel
+    
+    # Throttle
+    led.plot(0, Math.map(throttle,0,100,4,0)) # How to represent throttle if only leds from 0 - 4
+    # map(value you want to change, whats the lowest number it can be, whats the highest number it can be, 
+    #       whats the lowest output number you want it to be, whats the highest output number you want it to be)
+
+    # roll and pitch
+    led.plot(Math.map(roll,-45, 45,0,4), Math.map(pitch,-45, 45,0,4)) # x-axis -> moves side to side, y-axis -> moves up and down
+    
+    # This function send 1 value with a name from transmitter to drone. Tells it whether it is roll or pitch or whatever and how much it is
+    radio.send_value("P", pitch)
+    radio.send_value("A", arm)
+    radio.send_value("R", roll)
+    radio.send_value("T", throttle)
+    radio.send_value("Y", yaw)
+
 basic.forever(on_forever)
 
