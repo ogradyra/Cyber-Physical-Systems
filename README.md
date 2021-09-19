@@ -7,5 +7,5 @@ Claudia and Rachel :)
 - https://microbit-micropython.readthedocs.io/en/v1.0.1/
 - https://docs.micropython.org/en/latest/reference/index.html
 
-## Link to makebit coding site
+## Link to Microbit coding site
 - https://makecode.microbit.org/
