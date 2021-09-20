@@ -18,5 +18,3 @@ while True:
         for x in range(len(split_string)): # Print each item in the list split_string
             display.scroll(split_string[x])
 
-    
-    
