@@ -8,7 +8,7 @@ pitch = 11
 
 
 while True:
-    message = 'Hello World'
-    radio.send(message)
-    radio.send("P" + str(pitch))
-    display.scroll(message)
+    # message = 'Hello World'
+    # radio.send(message)
+    radio.send("P_" + str(pitch))
+    # display.scroll(message)
