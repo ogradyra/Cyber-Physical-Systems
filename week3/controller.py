@@ -53,20 +53,24 @@ def ledDisplay():
     old_pr_pixel_y = pr_pixel_y
     display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
     
-    if (roll < -22):
+    if (roll < -27):
+        pr_pixel_x = 0
+    elif (roll < -9):
         pr_pixel_x = 1
-    elif (roll < 0):
+    elif (roll < 9):
         pr_pixel_x = 2
-    elif (roll < 22):
+    elif (roll < 27):
         pr_pixel_x = 3
     else:
         pr_pixel_x = 4
     
-    if (pitch < -22):
+    if (pitch < -27):
+        pr_pixel_y = 0
+    elif (pitch < -9):
         pr_pixel_y = 1
-    elif (pitch < 0):
+    elif (pitch < 9):
         pr_pixel_y = 2
-    elif (pitch < 22):
+    elif (pitch < 27):
         pr_pixel_y = 3
     else:
         pr_pixel_y = 4
