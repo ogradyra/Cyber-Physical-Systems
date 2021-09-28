@@ -20,18 +20,21 @@ prev_r = 0
 prev_p = 0
 
 pixel_y = 4
+pr_pixel_x = 1
 
 def ledDisplay():
+    # Arm
     if arm == 1:
         display.set_pixel(0,0,9)
     else:
         display.set_pixel(0,0,0)
-        
+    
+    # Throttle
+    # Pixel position moves as the throttle number increases
     global pixel_y
     old_pixel_y = pixel_y
-    display.set_pixel(0, old_pixel_y, 0)
+    display.set_pixel(0, old_pixel_y, 0) # To clear old pixel
     
-    # Pixel position moves as the throttle number increases
     if throttle < 25:
         pixel_y = 4
     elif throttle < 50:
@@ -42,7 +45,23 @@ def ledDisplay():
         pixel_y = 1
         
     display.set_pixel(0, pixel_y, 9)
-
+    
+    # Pitch and Roll
+    global pr_pixel_x
+    old_pr_pixel_x = pr_pixel_x
+    display.set_pixel(old_pr_pixel_x, 0, 0) # To clear old pixel
+    
+    if (roll < -22):
+        pr_pixel_x = 1
+    elif (roll < 0):
+        pr_pixel_x = 2
+    elif (roll < 22):
+        pr_pixel_x = 3
+    else:
+        pr_pixel_x = 4
+    display.set_pixel(pr_pixel_x, 0, 9)
+    
+    
 while True:
 
 	# INITIALISE COMMAND OUTPUT STRING
@@ -76,6 +95,7 @@ while True:
     elif curr_r > prev_r and roll < 45:
         roll +=3
     prev_r = curr_r
+    print(roll)
     
     curr_p = accelerometer.get_y() # pitch
     if prev_p > curr_p and pitch > -45:
@@ -97,7 +117,6 @@ while True:
     ledDisplay()
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
     radio.send("P_" + str(pitch) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle))
-    print("P_" + str(pitch) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle))
     #radio.send("Y" + str(yaw))
     
     sleep(100) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
