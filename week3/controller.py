@@ -21,6 +21,7 @@ prev_p = 0
 
 pixel_y = 4
 pr_pixel_x = 1
+pr_pixel_y = 1
 
 def ledDisplay():
     # Arm
@@ -47,9 +48,10 @@ def ledDisplay():
     display.set_pixel(0, pixel_y, 9)
     
     # Pitch and Roll
-    global pr_pixel_x
+    global pr_pixel_x, pr_pixel_y
     old_pr_pixel_x = pr_pixel_x
-    display.set_pixel(old_pr_pixel_x, 0, 0) # To clear old pixel
+    old_pr_pixel_y = pr_pixel_y
+    display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
     
     if (roll < -22):
         pr_pixel_x = 1
@@ -59,7 +61,16 @@ def ledDisplay():
         pr_pixel_x = 3
     else:
         pr_pixel_x = 4
-    display.set_pixel(pr_pixel_x, 0, 9)
+    
+    if (pitch < -22):
+        pr_pixel_y = 1
+    elif (pitch < 0):
+        pr_pixel_y = 2
+    elif (pitch < 22):
+        pr_pixel_y = 3
+    else:
+        pr_pixel_y = 4
+    display.set_pixel(pr_pixel_x, pr_pixel_y, 9)
     
     
 while True:
@@ -80,10 +91,10 @@ while True:
         else:
             arm = 0
     
-    if button_a.is_pressed():
+    if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
         throttle -= 5
         
-    if button_b.is_pressed():
+    if button_b.is_pressed() and throttle <= 45: # Mac value of throttle is 50
         throttle += 5
     
 	# USE ACCLEREROMETER CLASS FOR DEALING WITH ROLL, PITCH AND YAW (X, Y AND Z AXES)
