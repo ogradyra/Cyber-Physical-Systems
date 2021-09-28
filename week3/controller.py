@@ -98,7 +98,7 @@ while True:
     if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
         throttle -= 5
         
-    if button_b.is_pressed() and throttle <= 45: # Mac value of throttle is 50
+    if button_b.is_pressed() and throttle <= 95: # Mac value of throttle is 100
         throttle += 5
     
 	# USE ACCLEREROMETER CLASS FOR DEALING WITH ROLL, PITCH AND YAW (X, Y AND Z AXES)
