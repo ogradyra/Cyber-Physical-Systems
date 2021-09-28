@@ -18,6 +18,7 @@ yaw = 0
 
 prev_r = 0
 prev_p = 0
+prev_y = 0
 
 pixel_y = 4
 pr_pixel_x = 1
@@ -110,24 +111,35 @@ while True:
     elif curr_r > prev_r and roll < 45:
         roll +=3
     prev_r = curr_r
-    print(roll)
     
-    curr_p = accelerometer.get_y() # pitch
+    # pitch -> Drone tilts forward and moves forward.
+    # Back two engines turn on
+    curr_p = accelerometer.get_y() 
     if prev_p > curr_p and pitch > -45:
         pitch -= 3
     elif curr_p > prev_p and pitch < 45:
         pitch +=3
     prev_p = curr_p
     
-    #y = accelerometer.get_y() # pitch
+    # yaw -> Changes where the front of the drone is facing (but dont move forwards
+    # or backwards) Like twisting the lid of a bottle. Lid doesn't leave its position
+    # but it does move
+    curr_y = accelerometer.get_z() 
+    print(curr_y)
+    if prev_y > curr_y and yaw > -30:
+        yaw -= 3
+    elif curr_y > prev_y and yaw < 30:
+        yaw += 3
+    prev_y = curr_y
+    
     #z = accelerometer.get_z() # yaw
     #print(x)
     #print(y)
     #print(z)
     
     # shake command
-    #if accelerometer.is_gesture("shake"):
-        #arm = 0
+    if accelerometer.is_gesture("shake"):
+        arm = 0
     
     ledDisplay()
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
