@@ -34,12 +34,15 @@ buzzer_id = 6
 buf = bytearray(16)
 uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 
+pixel_y = 4
+pr_pixel_x = 1
+pr_pixel_y = 1
+
 # function for splitting up incoming strings and assigning values for p,a,r,t,y
 def receive_data():
     global pitch, roll, throttle, arm
     
     split_string = incoming.split("_")
-    display.show(Image.HEART)
     
     for i in range(len(split_string)):
         if (split_string[i] == 'P'):
@@ -79,6 +82,64 @@ def scaleNum():
     print("PART:", p_int, a_int, r_int, t_int)
     #elif(string_letter == 'Y'):
        # To-Do: Add Yaw logic
+       
+
+def ledDisplay():
+    # Arm
+    if arm == '1':
+        display.set_pixel(0,0,9)
+    else:
+        display.set_pixel(0,0,0)
+    
+    # Throttle
+    # Pixel position moves as the throttle number increases
+    global pixel_y
+    old_pixel_y = pixel_y
+    display.set_pixel(0, old_pixel_y, 0) # To clear old pixel
+    
+    throttle_int_no_scale = int(throttle)
+    if throttle_int_no_scale < 25:
+        pixel_y = 4
+    elif throttle_int_no_scale < 50:
+        pixel_y = 3
+    elif throttle_int_no_scale < 75:
+        pixel_y = 2
+    else:
+        pixel_y = 1
+        
+    display.set_pixel(0, pixel_y, 9)
+    
+    # Pitch and Roll
+    global pr_pixel_x, pr_pixel_y
+    old_pr_pixel_x = pr_pixel_x
+    old_pr_pixel_y = pr_pixel_y
+    display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
+    
+    roll_int_no_scale = int(roll)
+    if (roll_int_no_scale < -27):
+        pr_pixel_x = 0
+    elif (roll_int_no_scale < -9):
+        pr_pixel_x = 1
+    elif (roll_int_no_scale < 9):
+        pr_pixel_x = 2
+    elif (roll_int_no_scale < 27):
+        pr_pixel_x = 3
+    else:
+        pr_pixel_x = 4
+    
+    pitch_int_no_scale = int(pitch)
+    if (pitch_int_no_scale < -27):
+        pr_pixel_y = 0
+    elif (pitch_int_no_scale < -9):
+        pr_pixel_y = 1
+    elif (pitch_int_no_scale < 9):
+        pr_pixel_y = 2
+    elif (pitch_int_no_scale < 27):
+        pr_pixel_y = 3
+    else:
+        pr_pixel_y = 4
+    display.set_pixel(pr_pixel_x, pr_pixel_y, 9)
+
 
 while True:
     sleep(100)
@@ -91,6 +152,8 @@ while True:
     
     # Scale and offset values
     scaleNum()
+    
+    ledDisplay()
     
     # parse into buffer
     buf[0] = 0
