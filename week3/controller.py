@@ -19,11 +19,29 @@ yaw = 0
 prev_r = 0
 prev_p = 0
 
+pixel_y = 4
+
 def ledDisplay():
     if arm == 1:
         display.set_pixel(0,0,9)
     else:
         display.set_pixel(0,0,0)
+        
+    global pixel_y
+    old_pixel_y = pixel_y
+    display.set_pixel(0, old_pixel_y, 0)
+    
+    # Pixel position moves as the throttle number increases
+    if throttle < 25:
+        pixel_y = 4
+    elif throttle < 50:
+        pixel_y = 3
+    elif throttle < 75:
+        pixel_y = 2
+    else:
+        pixel_y = 1
+        
+    display.set_pixel(0, pixel_y, 9)
 
 while True:
 
@@ -48,9 +66,6 @@ while True:
         
     if button_b.is_pressed():
         throttle += 5
-            
-    
-    
     
 	# USE ACCLEREROMETER CLASS FOR DEALING WITH ROLL, PITCH AND YAW (X, Y AND Z AXES)
 	# FIND APPROPRIATE VALUES FOR EACH TO SEND ACROSS TO DRONE
