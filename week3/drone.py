@@ -86,7 +86,7 @@ def scaleNum():
 
 def ledDisplay():
     # Arm
-    if arm == '1':
+    if a_int > 0:
         display.set_pixel(0,0,9)
     else:
         display.set_pixel(0,0,0)
@@ -97,12 +97,11 @@ def ledDisplay():
     old_pixel_y = pixel_y
     display.set_pixel(0, old_pixel_y, 0) # To clear old pixel
     
-    throttle_int_no_scale = int(throttle)
-    if throttle_int_no_scale < 25:
+    if t_int < 256:
         pixel_y = 4
-    elif throttle_int_no_scale < 50:
+    elif t_int < 512:
         pixel_y = 3
-    elif throttle_int_no_scale < 75:
+    elif t_int < 768:
         pixel_y = 2
     else:
         pixel_y = 1
@@ -115,26 +114,26 @@ def ledDisplay():
     old_pr_pixel_y = pr_pixel_y
     display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
     
-    roll_int_no_scale = int(roll)
-    if (roll_int_no_scale < -27):
+
+    if (r_int < 426):
         pr_pixel_x = 0
-    elif (roll_int_no_scale < -9):
+    elif (r_int < 489):
         pr_pixel_x = 1
-    elif (roll_int_no_scale < 9):
+    elif (r_int < 552):
         pr_pixel_x = 2
-    elif (roll_int_no_scale < 27):
+    elif (r_int < 615):
         pr_pixel_x = 3
     else:
         pr_pixel_x = 4
     
-    pitch_int_no_scale = int(pitch)
-    if (pitch_int_no_scale < -27):
+    
+    if (p_int < 417):
         pr_pixel_y = 0
-    elif (pitch_int_no_scale < -9):
+    elif (p_int < 480):
         pr_pixel_y = 1
-    elif (pitch_int_no_scale < 9):
+    elif (p_int < 543):
         pr_pixel_y = 2
-    elif (pitch_int_no_scale < 27):
+    elif (p_int < 606):
         pr_pixel_y = 3
     else:
         pr_pixel_y = 4
@@ -153,7 +152,6 @@ while True:
     # Scale and offset values
     scaleNum()
     
-    ledDisplay()
     
     # parse into buffer
     buf[0] = 0
@@ -201,4 +199,6 @@ while True:
     
     print(buf)
     uart.write(buf)
+    
+    ledDisplay()
         
