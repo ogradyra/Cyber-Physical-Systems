@@ -22,13 +22,14 @@ p_int = 0
 a_int = 0
 r_int = 0
 t_int = 0
+y_int = 0
 
-pitch_id = 1
-arm_id = 4
 roll_id = 0
+pitch_id = 1
 throttle_id = 2
 yaw_id = 3
-fm_id = 5
+arm_id = 4
+flight_mode_id = 5
 buzzer_id = 6
  
 buf = bytearray(16)
@@ -56,18 +57,17 @@ def receive_data():
             
         elif (split_string[i] == 'T'):
             throttle = split_string[i+1]
-            
+        
+        elif (split_string[i] == 'Y'):
+            yaw = split_string[i+1]
         print(split_string[i])
 
 def scaleNum():
-    # To-do: Flight mode is going to be 45. Add this into the logic
-    global flight_mode, p_int, a_int, r_int, t_int
+    global flight_mode, p_int, a_int, r_int, t_int, y_int
     flight_mode = 45*5 + 512
     
     p_int = int(pitch) * 3.5 + 512
     p_int = int(p_int)
-    # print("ARMMMMM:",type(arm))
-    # print("ARMMMMM:",arm)
 
     if(arm == '1'):
         a_int = 180*5
@@ -79,7 +79,10 @@ def scaleNum():
 
     t_int = int(throttle) * 512 / 50
     t_int = int(t_int)
-    print("PART:", p_int, a_int, r_int, t_int)
+    
+    y_int = int(yaw) * 5 + 512
+    y_int = int(y_int)
+    print("PART:", p_int, a_int, r_int, t_int, y_int)
     #elif(string_letter == 'Y'):
        # To-Do: Add Yaw logic
        
@@ -171,33 +174,39 @@ while True:
         buf[4] = pitch_id << 2 
         buf[5] = p_int 
         
-    if ( t_int > 255):
+    if (t_int > 255):
         buf[6] =  t_int >> 8 
         buf[7] =  t_int 
     else:
         buf[6] = throttle_id << 2 
         buf[7] = t_int 
     
-    if (yaw > 255):
-        buf[8] = yaw >> 8 
-        buf[9] = yaw 
+    if (y_int > 255):
+        buf[8] = y_int >> 8 
+        buf[9] = y_int 
     else:
         buf[8] = yaw_id << 2 
-        buf[9] = yaw 
+        buf[9] = y_int 
     
     if (a_int > 255):
-        buf[10] = a_int >> 8 
-        buf[11] = a_int 
+        buf[10] = (a_int >> 8) & 255 
+        buf[11] = (a_int) & 255 
     else:
-        buf[10] = arm_id << 2 
-        buf[11] = a_int 
-        
-    buf[12] = flight_mode >> 8 
-    buf[13] = flight_mode 
+        buf[10] = (arm_id << 2) & 255 
+        buf[11] = (a_int) & 255 
+    
+    if (flight_mode > 255):
+        buf[12] = flight_mode >> 8 
+        buf[13] = flight_mode
+    else:
+        buf[12] = flight_mode_id << 2 
+        buf[13] = flight_mode    
+     
     buf[14] = buzzer_id << 2 
     buf[15] = buzzer 
     
     print(buf)
+    print(buf[2])
     uart.write(buf)
     
     ledDisplay()
