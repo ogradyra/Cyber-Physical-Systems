@@ -31,9 +31,10 @@ yaw_id = 3
 arm_id = 4
 flight_mode_id = 5
 buzzer_id = 6
- 
-buf = bytearray(16)
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+
+buf_size = 16
+buf = bytearray(buf_size)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
 
 pixel_y = 4
 pr_pixel_x = 1
@@ -158,56 +159,49 @@ while True:
     
     # parse into buffer
     buf[0] = 0
-    buf[1] = 0x01
+    buf[1] = 0x01 & 255 
     
     if (r_int > 255):
-        buf[2] = r_int >> 8
-        buf[3] = r_int
+        buf[2] = (r_int >> 8) & 255 
     else:
-        buf[2] = roll_id << 2 
-        buf[3] = r_int 
+        buf[2] = (roll_id << 2) & 255 
+    buf[3] = r_int & 255 
     
     if (p_int > 255):
-        buf[4] = p_int >> 8 
-        buf[5] = p_int 
+        buf[4] = (p_int >> 8) & 255
     else:
-        buf[4] = pitch_id << 2 
-        buf[5] = p_int 
+        buf[4] = (pitch_id << 2) & 255 
+    buf[5] = p_int & 255 
         
     if (t_int > 255):
-        buf[6] =  t_int >> 8 
-        buf[7] =  t_int 
+        buf[6] =  (t_int >> 8) & 255
     else:
-        buf[6] = throttle_id << 2 
-        buf[7] = t_int 
+        buf[6] = (throttle_id << 2) & 255 
+    buf[7] = t_int & 255 
     
     if (y_int > 255):
-        buf[8] = y_int >> 8 
-        buf[9] = y_int 
+        buf[8] = (y_int >> 8) & 255
     else:
-        buf[8] = yaw_id << 2 
-        buf[9] = y_int 
+        buf[8] = (yaw_id << 2) & 255 
+    buf[9] = y_int & 255 
     
     if (a_int > 255):
-        buf[10] = (a_int >> 8) & 255 
-        buf[11] = (a_int) & 255 
+        buf[10] = (a_int >> 8) & 255
     else:
         buf[10] = (arm_id << 2) & 255 
-        buf[11] = (a_int) & 255 
+    buf[11] = a_int & 255 
     
     if (flight_mode > 255):
-        buf[12] = flight_mode >> 8 
-        buf[13] = flight_mode
+        buf[12] = (flight_mode >> 8) & 255
     else:
-        buf[12] = flight_mode_id << 2 
-        buf[13] = flight_mode    
+        buf[12] = (flight_mode_id << 2) & 255 
+    buf[13] = flight_mode & 255 
      
-    buf[14] = buzzer_id << 2 
-    buf[15] = buzzer 
+    buf[14] = (buzzer_id << 2) & 255 
+    buf[15] = buzzer & 255 
     
     print(buf)
-    print(buf[2])
+    # https://stackoverflow.com/questions/59908012/what-are-t-and-r-in-byte-representation
     uart.write(buf)
     
     ledDisplay()
-        
