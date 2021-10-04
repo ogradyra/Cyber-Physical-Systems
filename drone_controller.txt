@@ -1,0 +1,328 @@
+#use with any code that receives radio messages
+from microbit import *
+import radio
+#import numpy as np
+#import basic
+import utime
+import micropython
+
+#Initialising microbit
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin8)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+radio.on()
+radio.config(length=251)
+radio.config(channel=6)
+micropython.kbd_intr(-1)
+
+#Initalize values to be received from tx
+roll        = 0
+pitch       = 0
+throttle    = 0
+yaw         = 0
+arm         = 0
+flight_mode = 0
+buzzer      = 0
+
+#Telemetry courtesy of Cormac
+Pitchtel    = 0
+Yawtel      = 0
+Rolltel     = 0
+datalet     = 0
+battery     = 0
+datalist    = []
+
+#Initialize the channels for the UART
+ch_roll         = 0
+ch_pitch        = 1
+ch_throttle     = 2
+ch_yaw          = 3
+ch_arm          = 4
+ch_flight_mode  = 5
+ch_buzzer       = 6
+
+#Shift the channels for the buffer
+s_roll         = ch_roll        << 2
+s_pitch        = ch_pitch       << 2
+s_throttle     = ch_throttle    << 2
+s_yaw          = ch_yaw         << 2
+s_arm          = ch_arm         << 2
+s_flight_mode  = ch_flight_mode << 2
+s_buzzer       = ch_buzzer      << 2
+
+scaling = 3.5
+offset = 512
+#Initalize the battery dead condition
+battery_dead = False
+
+def display_battery_level(b)->none:
+
+    battery_percent = ((b-300)/(1023-300))
+
+    if battery_percent >= 0.6 and battery_percent < 0.8:
+        display.set_pixel(4,0,0)
+        display.set_pixel(4,1,9)
+        display.set_pixel(4,2,9)
+        display.set_pixel(4,3,9)
+        display.set_pixel(4,4,9)
+
+    elif battery_percent >= 0.4 and battery_percent < 0.6:
+        display.set_pixel(4,0,0)
+        display.set_pixel(4,1,0)
+        display.set_pixel(4,2,9)
+        display.set_pixel(4,3,9)
+        display.set_pixel(4,4,9)
+
+    elif battery_percent >= 0.2 and battery_percent < 0.4:
+        display.set_pixel(4,0,0)
+        display.set_pixel(4,1,0)
+        display.set_pixel(4,2,0)
+        display.set_pixel(4,3,9)
+        display.set_pixel(4,4,9)
+
+    elif battery_percent < 0.2:
+        display.show(Image.SKULL)
+        battery_dead = True
+
+    else:
+        display.set_pixel(4,0,9)
+        display.set_pixel(4,1,9)
+        display.set_pixel(4,2,9)
+        display.set_pixel(4,3,9)
+        display.set_pixel(4,4,9)
+
+#Function for getting the 2 MSBs
+def two_bit(n):
+    masked  = n & 768
+    ans     = masked >> 8
+    return ans
+
+#Function for getting the remaining 8 bits
+def eight_bit(n):
+    ans = n & 255
+    return ans
+
+def split(string):
+    word = ''
+    s = []
+    for i in range(len(string)):
+        if string[i] == ',':
+            s.append(word)
+            word = ''
+        else:
+            word += string[i]
+    s.append(word)
+    return s
+
+
+while True:
+    #Battery Stuff
+    battery = pin0.read_analog()
+    display_battery_level(battery)
+    #display.show(battery)
+    radio.send(str(battery))  #battery is not used when connected via usb
+   
+    #Receive Radio from transmitter
+    received_data = radio.receive()
+    if type(received_data) != str:
+        received_data = "0,0,0,0,0"
+    #print("Received data: ", received_data)
+    #display.show(received_data)
+    #Process the string into the different data
+    radio_data = received_data.split(",")
+    #display.show(radio_data[1])
+    pitch   = int(radio_data[0])
+    arm     = int(radio_data[1])
+    roll    = int(radio_data[2])
+    throttle= int(radio_data[3])
+    yaw     = int(radio_data[4])
+    #print("Pitch = ", pitch)
+    #display.show(pitch)
+
+    if arm == 1:
+        display.set_pixel(0,0,9)#
+    else:
+        display.set_pixel(0,0,0)
+
+    if throttle > 99:
+        throttle = 99
+    elif throttle < 0:
+        throttle = 0
+   
+    if pitch > 30:
+        pitch = 30
+    elif pitch < -30:
+        pitch = -30
+   
+    if roll > 30:
+        roll = 30
+    elif roll < -30:
+        roll = -30
+   
+    if yaw > 90:
+        yaw = 90
+    elif yaw < -90:
+        yaw = -90
+
+
+    pitch11 = int(pitch * scaling + offset)
+    roll11 = int(roll * scaling + offset + 9.5)
+    yaw11 = int(0 * (scaling + 1.5) + offset)
+    throttle10 = int((throttle * 512)/50)
+    flightMode11 = int(45 * (scaling + 1.5))
+
+    Aux11 = 0
+    if arm == 0:
+        Aux11 = 0
+    if arm == 1:
+        Aux11 = int(180 * (scaling + 1.5))
+
+    buf = bytearray(16)
+    buf[0] = 0
+    buf[1] = 0x01
+    buf[2] = (0 << 2) | ((roll11 >> 8) & 3)
+    buf[3] = roll11 & 255
+    buf[4] = (1 << 2) | ((pitch11 >> 8) & 3)
+    buf[5] = pitch11 & 255
+    buf[6] = (2 << 2) | ((throttle10 >> 8) & 3)
+    buf[7] = throttle10 & 255
+    buf[8] = (3 << 2) | ((yaw11 >> 8) & 3)
+    buf[9] = yaw11 & 255
+    buf[10] = (4 << 2) | ((Aux11 >> 8) & 3)
+    buf[11] = Aux11 & 255
+    buf[12] = (5 << 2) | ((flightMode11 >> 8) & 3)
+    buf[13] = flightMode11 & 255
+    buf[14] = (6 << 2) | ((0 >> 8) & 3)
+    buf[15] = 0 & 255
+    uart.write(buf)
+    print("buf: ", buf)
+
+    #Create the commands
+    """
+    roll_command        = int((roll * 3.5) + 521.5)
+    pitch_command       = int((pitch * 3.5) + 512)
+    throttle_command    = int(2*3.5*throttle + 512/2.5) #int((10 * 512)/50)
+    yaw_command         = int(0*5 + 512)#int((yaw * 5) + 512)
+    arm_command         = int((arm * 5) * 180)
+    flight_mode_command = int((45 * 5)) #+ 512)
+
+    print("Pitch: ", pitch)
+    #Prepare the UART buffer
+    buff = bytearray(16)
+    buff[0] = 0
+    buff[1] = 0x01
+    buff[2] = (s_roll          | two_bit(roll_command))
+    buff[3] = (eight_bit(roll_command))
+    buff[4] = (s_pitch         | two_bit(pitch_command))
+    buff[5] = (eight_bit(pitch_command))
+    buff[6] = (s_throttle      | two_bit(throttle_command))
+    buff[7] = (eight_bit(throttle_command))
+    buff[8] = (s_yaw           | two_bit(yaw_command))
+    buff[9] = (eight_bit(yaw_command))
+    buff[10] = (s_arm           | two_bit(arm_command))
+    buff[11] = (eight_bit(arm_command))
+    buff[12] = (s_flight_mode   | two_bit(flight_mode_command))
+    buff[13] = (eight_bit(flight_mode_command))
+    buff[14] = (s_buzzer | 0)
+    buff[15] = (0)
+    #print("Buffer: ",buff)
+    #Write to UART
+    #print("Buffer: ",buff)
+    uart.write(buff)
+        #display.show(Image.HEART)
+    """
+    #Reading from UART to get telemetry
+    #display.clear()
+    if uart.any():
+        data = uart.read()
+        datalist = list(data)
+        #display.show(Image.HEART)
+        if isinstance(datalist, list) and len(datalist) >= 9:
+            Pitchtel = int(datalist[3]) - int(datalist[4])
+            Rolltel = int(datalist[5]) - int(datalist[6])
+            Yawtel = int(datalist[7]) + (int(datalist[8]) * 255)
+            #display.show(Yawtel)
+            datalet = int(len(datalist))
+
+    #putting together all telemetry and sending it back to the transmitter
+    #x = accelerometer.get_x()
+    #y = accelerometer.get_y()
+    #z = accelerometer.get_z()
+    #telemetry = str(x) + ", " + str(y) + ", " + str(z) + ", " + str(Pitchtel) + ", " + str(Yawtel) + ", " + str(Rolltel) + ", " + str(running_time())+ ", " + str(datalet)
+    #telemetry = str(datalist)
+    #radio.send(telemetry)
+
+    sleep(50)
+
+
+Daniel Flood <floodd1@tcd.ie>
+12:59 (20 minutes ago)
+to me
+
+from microbit import * # NEEDS TO BE INCLUDED IN ALL CODE WRITTEN FOR MICROBIT
+import radio # WORTH CHECKING OUT RADIO CLASS IN BBC MICRO DOCS
+
+radio.on() # TURNS ON USE OF ANTENNA ON MICROBIT
+radio.config(length=251)
+radio.config(channel=6) # A FEW PARAMETERS CAN BE SET BY THE PROGRAMMER
+
+# INITIALISE COMMANDS
+# REMEMBER PARTY
+Pitch = 0
+Arm = 0
+Roll = 0
+Throttle = 0
+Yaw = 0
+
+# NO NEED TO MAKE FUNCTIONS FOR THIS CONTROLLER
+# JUST USE WHILE LOOP
+
+while True:
+# INITIALISE COMMAND OUTPUT STRING
+
+    if button_a.was_pressed() and button_b.was_pressed():
+        Arm = 1
+        Throttle = 0
+
+    if button_a.is_pressed():
+        Throttle -= 5
+
+    if button_b.is_pressed():
+        Throttle += 5
+
+    Pitch = -accelerometer.get_y()
+    Roll = accelerometer.get_x()
+    print("Pitch: ", Pitch)
+    print("Roll: ", Roll)
+   
+    #Yaw?
+
+    if accelerometer.was_gesture("shake"):
+        Arm = 0
+        Throttle = 0
+
+
+    command =  str(Pitch) + ", " + str(Arm) + ", " + str(Roll) + ", " + str(Throttle) + ", " + str(Yaw)
+
+    radio.send(command)
+
+# ARM THE DRONE USING BOTH BUTTONS
+
+# INCREASE THROTTLE WITH B BUTTON
+
+# CHECK OUT is_pressed() AND was_pressed() FUNCTIONS
+
+# FIGURE OUT WHICH FUNCTION IS BETTER SUITED FOR THE CONTROLLER
+
+
+
+# USE ACCLEREROMETER CLASS FOR DEALING WITH ROLL, PITCH AND YAW (X, Y AND Z AXES)
+
+# FIND APPROPRIATE VALUES FOR EACH TO SEND ACROSS TO DRONE
+
+
+
+# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
+
+
+
+    sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
