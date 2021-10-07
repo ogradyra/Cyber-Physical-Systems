@@ -1,0 +1,9 @@
+from microbit import *
+
+
+while True:
+    display.off() # Use off() to turn off the display 
+                  # (thus allowing you to re-use the GPIO pins associated 
+                  # with the display for other purposes).
+    print("Y-axis:",pin3.read_analog(), "X-axis:",pin4.read_analog())
+    sleep(50)
