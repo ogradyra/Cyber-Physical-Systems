@@ -1,3 +1,4 @@
+# Add your Python code here. E.g.
 from microbit import *
 
 
@@ -5,5 +6,21 @@ while True:
     display.off() # Use off() to turn off the display 
                   # (thus allowing you to re-use the GPIO pins associated 
                   # with the display for other purposes).
+    
+    
     print("Y-axis:",pin3.read_analog(), "X-axis:",pin4.read_analog())
+    
+    # Throttle:
+    # Logic
+    # Send to drone
+    
+    # Roll & Pitch:
+    # At centre, x=512 y=512 VERY ROUGHLY
+    
+    # --- SUDO CODE ---
+    # if curr_x_value < 500:
+    #     roll_value to the left
+    # elif curr_x_value > 550:
+    #     roll_value to the right
+    # Send to drone
     sleep(50)
