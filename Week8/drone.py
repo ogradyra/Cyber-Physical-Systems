@@ -15,12 +15,6 @@ micropython.kbd_intr(-1)
 incoming = 0
 buzzer = 0
 
-# Scaled variables
-
-r_int = 0
-t_int = 0
-y_int = 0
-
 roll_id = 0
 pitch_id = 1
 throttle_id = 2
@@ -77,11 +71,12 @@ def ledDisplay():
     old_pixel_y = pixel_y
     display.set_pixel(0, old_pixel_y, 0)  # To clear old pixel
 
-    if t_int < 256:
+    local_throttle = int(throttle)
+    if local_throttle < 25:
         pixel_y = 4
-    elif t_int < 512:
+    elif local_throttle < 50:
         pixel_y = 3
-    elif t_int < 768:
+    elif local_throttle < 75:
         pixel_y = 2
     else:
         pixel_y = 1
@@ -156,11 +151,6 @@ def battery_read():
         display.set_pixel(4, 4, 9)
 
 def read_into():
-    
-    buf_size = 16
-    buf = bytearray(buf_size)
-    
-    global t_int, y_int
     flight_mode = 45 * 5
 
     p_int = int(pitch) * 3.5 + 512
@@ -180,6 +170,13 @@ def read_into():
     y_int = int(yaw) * 5 + 512
     y_int = int(y_int)
     
+    # roll_id = 0
+    # pitch_id = 1
+    # throttle_id = 2
+    # yaw_id = 3
+    # arm_id = 4
+    # flight_mode_id = 5
+    # buzzer_id = 6
     buf = bytearray(16)
     buf[0] = 0
     buf[1] = 0x01
