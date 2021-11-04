@@ -109,7 +109,7 @@ while True:
         
     if button_b.was_pressed() and throttle <= 95: # Max value of throttle is 100
         throttle_s += 5
-   
+
     roll = pin1.read_analog()
     pitch = pin2.read_analog()
     
@@ -120,34 +120,35 @@ while True:
     # if throttle_s > 100:
     #     throttle_s = 100
         
-
-    if roll/600 < 1: # Roll is num less than 600
-        if roll/400 < 1: # Roll is num less than 400
-            if roll/200 < 1: # Roll is num less than 200
-                roll_s = -20
-            else: # Roll is num less than 400 but greater than or equal to 200
-                roll_s = -10
-        else: # Roll is num less than 600 but greater than or equal to 400
-            roll_s = 0
-    elif roll/800 < 1: # Roll is num less than 800
+    if roll >= 0 and roll < 200:
+        roll_s = -20
+    elif roll > 200 and roll < 400:
+        roll_s = -10
+    elif roll > 400 and roll < 600:
+        roll_s = 0
+    elif roll > 600 and roll < 800:
         roll_s = 10
-    else: # Roll is num greater than or equal to 800
+    elif roll > 800 and roll <= 1023:
         roll_s = 20
-    
-    if pitch/600 < 1: 
-        if pitch/400 < 1: 
-            if pitch/200 < 1: 
-                pitch_s = -20
-            else: 
-                pitch_s = -10
-        else: 
-            pitch_s = 0
-    elif pitch/800 < 1: 
+    else:
+        roll_s = 0
+        print("Error with roll")
+        
+    if pitch >= 0 and pitch < 200:
+        pitch_s = -20
+    elif pitch > 200 and pitch < 400:
+        pitch_s = -10
+    elif pitch > 400 and pitch < 600:
+        pitch_s = 0
+    elif pitch > 600 and pitch < 800:
         pitch_s = 10
-    else: 
+    elif pitch > 800 and pitch <= 1023:
         pitch_s = 20
-    
-    print("Roll", roll, "Scaled Roll:",roll_s, "Pitch:", pitch, "Scaled Pitch:", pitch_s)
+    else:
+        pitch_s = 0
+        print("Error with roll")
+  
+    #print("Roll", roll, "Scaled Roll:",roll_s, "Pitch:", pitch)
     
     # shake command
     if accelerometer.is_gesture("shake"):
