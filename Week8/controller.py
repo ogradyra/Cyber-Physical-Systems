@@ -157,7 +157,7 @@ while True:
     
     ledDisplay()
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
-    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll_s) + "_T_" + str(throttle_s))
+    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll_s) + "_T_" + str(throttle_s) + "_Y_" + str(0))
     #radio.send(str(0) + "," + str(arm) + "," + str(0) + "," + str(throttle_s) + "," + str(0))
 
     #radio.send("Y" + str(yaw))
