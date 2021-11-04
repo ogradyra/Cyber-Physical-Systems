@@ -13,13 +13,10 @@ radio.config(channel=47)
 radio.config(queue=1)
 micropython.kbd_intr(-1)
 incoming = 0
-
-flight_mode = 0
 buzzer = 0
 
 # Scaled variables
-p_int = 0
-a_int = 0
+
 r_int = 0
 t_int = 0
 y_int = 0
@@ -32,8 +29,7 @@ arm_id = 4
 flight_mode_id = 5
 buzzer_id = 6
 
-buf_size = 16
-buf = bytearray(buf_size)
+
 uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin8)
 #uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 
@@ -69,7 +65,8 @@ def receive_data():
 
 def ledDisplay():
     # Arm
-    if a_int > 0:
+    
+    if arm == "1":
         display.set_pixel(0, 0, 9)
     else:
         display.set_pixel(0, 0, 0)
@@ -159,9 +156,11 @@ def battery_read():
         display.set_pixel(4, 4, 9)
 
 def read_into():
-    global buf
     
-    global flight_mode, p_int, a_int, r_int, t_int, y_int
+    buf_size = 16
+    buf = bytearray(buf_size)
+    
+    global t_int, y_int
     flight_mode = 45 * 5
 
     p_int = int(pitch) * 3.5 + 512
@@ -216,3 +215,5 @@ while True:
         sleep(50)
     else:
         print("No Incoming Data")
+
+    
