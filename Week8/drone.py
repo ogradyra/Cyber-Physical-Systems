@@ -3,10 +3,10 @@ from microbit import *
 import radio
 from math import *
 import micropython
-import utime
+import time
 
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin8)
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin8)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 radio.on()  # Radio won't work unless it's on
 radio.config(length=251)
 radio.config(channel=47)
@@ -14,14 +14,6 @@ radio.config(queue=1)
 micropython.kbd_intr(-1)
 incoming = 0
 buzzer = 0
-
-roll_id = 0
-pitch_id = 1
-throttle_id = 2
-yaw_id = 3
-arm_id = 4
-flight_mode_id = 5
-buzzer_id = 6
 
 
 uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin8)
@@ -201,7 +193,7 @@ def read_into():
     
 while True:
     
-
+    start = time.ticks_ms();
     incoming = radio.receive()
     
     if incoming:
@@ -212,5 +204,8 @@ while True:
         sleep(50)
     else:
         print("No Incoming Data")
+    
+    end = time.ticks_ms()
+    #print("Time Taken: ", end - start);
 
     
