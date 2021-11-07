@@ -28,7 +28,7 @@ total_battery: float = 0
 
 incoming = 0
 battery = 0
-tele_roll = 0
+tele_roll = ""
 
 # use LEDs on controller to track throttle, arm, pitch and roll values
 def ledDisplay():
@@ -90,23 +90,17 @@ def receive_data():
             #print(battery)
 
         elif split_string[i] == "Roll":
-            tele_roll = int(split_string[i + 1])
+            tele_roll = split_string[i + 1]
             
     #print("Roll: " + tele_roll)
 
-def scaleTelemetry():
-    global scaled_tele_roll
-    scaled_tele_roll = (tele_roll*3.5) + 521
     
 def fixRoll():
-    global scaled_tele_roll
-    #tele_roll = float(tele_roll)
-    error = roll - scaled_tele_roll
-    print("Error: ", error, "Roll: ", roll, "Tele Roll: ", tele_roll)
+    print("Error: ", tele_roll)
     
 while True:
     receive_data()
-    scaleTelemetry()
+    
     fixRoll()
 
     # check for low battery
