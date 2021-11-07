@@ -1,9 +1,9 @@
-from microbit import * # NEEDS TO BE INCLUDED IN ALL CODE WRITTEN FOR MICROBIT
-import radio # WORTH CHECKING OUT RADIO CLASS IN BBC MICRO DOCS
+from microbit import *  # NEEDS TO BE INCLUDED IN ALL CODE WRITTEN FOR MICROBIT
+import radio  # WORTH CHECKING OUT RADIO CLASS IN BBC MICRO DOCS
 
-radio.on() # TURNS ON USE OF ANTENNA ON MICROBIT
+radio.on()  # TURNS ON USE OF ANTENNA ON MICROBIT
 radio.config(length=251)
-radio.config(channel=47) 
+radio.config(channel=47)
 
 # INITIALISE COMMANDS
 pitch = 0
@@ -12,7 +12,7 @@ arm = 0
 roll = 0
 throttle = 0
 throttle_s = 0
-roll_s=0
+roll_s = 0
 yaw = 0
 
 prev_r = 0
@@ -25,20 +25,21 @@ pr_pixel_y = 1
 
 total_battery: float = 0
 
+
 # use LEDs on controller to track throttle, arm, pitch and roll values
 def ledDisplay():
     # Arm
     if arm == 1:
-        display.set_pixel(0,0,9)
+        display.set_pixel(0, 0, 9)
     else:
-        display.set_pixel(0,0,0)
-    
+        display.set_pixel(0, 0, 0)
+
     # Throttle
     # Pixel position moves as the throttle number increases
     global pixel_y
     old_pixel_y = pixel_y
-    display.set_pixel(0, old_pixel_y, 0) # To clear old pixel
-    
+    display.set_pixel(0, old_pixel_y, 0)  # To clear old pixel
+
     if throttle_s < 25:
         pixel_y = 4
     elif throttle_s < 50:
@@ -47,51 +48,46 @@ def ledDisplay():
         pixel_y = 2
     else:
         pixel_y = 1
-        
+
     display.set_pixel(0, pixel_y, 9)
-    
+
     # Pitch and Roll
     global pr_pixel_x, pr_pixel_y
     old_pr_pixel_x = pr_pixel_x
     old_pr_pixel_y = pr_pixel_y
-    display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
-    
-    values = [-20, -10, 0, 10, 20] # List of roll values
+    display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0)  # To clear old pixel
+
+    values = [-20, -10, 0, 10, 20]  # List of values
     # Roll is -20 on LHS and 20 on RHS
     # Pitch is 20 going forward and -20 going backwards
     for x in values:
         if roll_s == x:
             # Set the pixel roll value to the index of the match value
-            pr_pixel_x = values.index(x) 
+            pr_pixel_x = values.index(x)
             break
-        
+
     for y in values:
-        print(y);
         if pitch_s == y:
             # At 20, pixel should be 0, and at -20, pixel should be 4
             # Opposit way round to roll
-            pr_pixel_y = (values.index(y) - 4) * (-1) 
+            pr_pixel_y = (values.index(y) - 4) * (-1)
             break
-  
+
     display.set_pixel(pr_pixel_x, pr_pixel_y, 9)
-    
-    
+
+
 while True:
 
     # check for low battery
     battery = radio.receive()
-    
+
     if battery:
         b = float(battery)
-        
         if b < 0.2:
             display.show(Image.SKULL)
-            
         total_battery = total_battery + b
 
-        #print("Battery level:", (b / 1023) * 3.3, "V")
-            
-	# INITIALISE COMMAND OUTPUT STRING
+    # INITIALISE COMMAND OUTPUT STRING
     command = ""
 
 	# ARM THE DRONE USING BOTH BUTTONS
@@ -157,10 +153,7 @@ while True:
     
     ledDisplay()
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
-    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll_s) + "_T_" + str(throttle_s))
+    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll_s) + "_T_" + str(throttle_s) + "_Y_" + str(0))
     #radio.send(str(0) + "," + str(arm) + "," + str(0) + "," + str(throttle_s) + "," + str(0))
-
-    #radio.send("Y" + str(yaw))
-    #print(throttle)
     
-    sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
+    #sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
