@@ -84,14 +84,20 @@ def ledDisplay():
     r = int(roll)
     p = int(pitch)
     
+    if r >= 0 and r < 200:
+        pr_pixel_x = 0
+    elif r > 200 and r < 400:
+        pr_pixel_x = 1
+    elif r > 400 and r < 600:
+        pr_pixel_x = 2
+    elif r > 600 and r < 800:
+        pr_pixel_x = 3
+    elif r > 800 and r <= 1023:
+        pr_pixel_x = 4
+        
     values = [-20, -10, 0, 10, 20] # List of roll values
     # Roll is -20 on LHS and 20 on RHS
     # Pitch is 20 going forward and -20 going backwards
-    for x in values:
-        if r == x:
-            # Set the pixel roll value to the index of the match value
-            pr_pixel_x = values.index(x) 
-            break
         
     for y in values:
         if p == y:
@@ -152,8 +158,9 @@ def read_into():
     else:
         a_int = 0
 
-    r_int = int(roll) * 3.5 + 521
-    r_int = int(r_int)
+    # r_int = int(roll) * 3.5 + 521
+    # r_int = int(r_int)
+    r_int = int(roll)
 
     t_int = int(throttle) * 512 / 50
     t_int = int(t_int)
