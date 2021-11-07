@@ -94,15 +94,19 @@ def receive_data():
             
     #print("Roll: " + tele_roll)
 
+def scaleTelemetry():
+    global scaled_tele_roll
+    scaled_tele_roll = (tele_roll*3.5) + 521
     
 def fixRoll():
-    global tele_roll
+    global scaled_tele_roll
     #tele_roll = float(tele_roll)
-    error = roll_s - tele_roll
-    print("Error: ", error, "Roll: ", roll_s, "Tele Roll: ", tele_roll)
+    error = roll - scaled_tele_roll
+    print("Error: ", error, "Roll: ", roll, "Tele Roll: ", tele_roll)
     
 while True:
     receive_data()
+    scaleTelemetry()
     fixRoll()
 
     # check for low battery
@@ -142,28 +146,11 @@ while True:
     # throttle_s = int(throttle/10)
     # if throttle_s > 100:
     #     throttle_s = 100
-        
-    if roll >= 0 and roll < 100:
-        roll_s = -20
-    elif roll >= 100 and roll < 200:
-        roll_s = -15
-    elif roll > 200 and roll < 300:
-        roll_s = -10
-    elif roll > 300 and roll < 400:
-        roll_s = -5
-    elif roll > 400 and roll < 500:
-        roll_s = 0
-    elif roll > 500 and roll < 600:
-        roll_s = 5
-    elif roll > 600 and roll < 700:
-        roll_s = 10
-    elif roll > 700 and roll < 800:
-        roll_s = 15
-    elif roll > 800 and roll <= 1023:
-        roll_s = 20
-    else:
-        roll_s = 0
-        print("Error with roll")
+    
+    if roll > 1023:
+        roll = 1023
+    elif roll < 0:
+        roll = 0
         
     if pitch >= 0 and pitch < 200:
         pitch_s = -20
@@ -188,7 +175,7 @@ while True:
     
     ledDisplay()
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
-    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll_s) + "_T_" + str(throttle_s) + "_Y_" + str(0))
+    radio.send("P_" + str(pitch_s) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle_s) + "_Y_" + str(0))
     #radio.send(str(0) + "," + str(arm) + "," + str(0) + "," + str(throttle_s) + "," + str(0))
     
     
