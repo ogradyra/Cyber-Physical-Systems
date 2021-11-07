@@ -148,6 +148,7 @@ def battery_read():
         display.set_pixel(4, 4, 9)
 
 def read_into():
+    global r_int
     flight_mode = 45 * 5
 
     p_int = int(pitch) * 3.5 + 512
@@ -198,9 +199,16 @@ def read_into():
     # https://stackoverflow.com/questions/59908012/what-are-t-and-r-in-byte-representation
 
 def telemetry():
+    global curr_r
     curr_r = accelerometer.get_x() # roll
-    tele_roll = str(curr_r)
-    radio.send("_Roll_" + tele_roll)
+    
+    global scaled_tele_roll
+    scaled_tele_roll = (curr_r*3.5) + 521
+    
+    
+def errorValue():
+    error_roll = r_int - scaled_tele_roll
+    radio.send("_Roll_"+ str(error_roll))
     
 while True:
     
@@ -213,6 +221,7 @@ while True:
         ledDisplay()
         battery_read()
         telemetry()
+        errorValue()
         sleep(50)
     else:
         print("No Incoming Data")
