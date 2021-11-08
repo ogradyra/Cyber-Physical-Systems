@@ -31,7 +31,7 @@ prev_y = 0
 
 target_p = 512
 target_r = 521
-target_h = 20
+target_h = 100
 
 # coefficients
 kp = 0.5
@@ -56,31 +56,22 @@ def receive_data():
     
     # Drone rising (throttle increase): B follows A
     # Drone falling (throttle decrease): A follows B
+   
+    #print(a, a_prev_state)
     
-    a_state = pin3.read_digital()
-    #print(a_state, a_prev_state)
-    
-    if a_state != a_prev_state:
-        if pin0.read_digital() != a_state:
+    if a != a_prev_state:
+        if b != a:
             # throttle increasing
             p_up = p_up + 1
             
-            if p_up == 24:
-                p_up = 0
-                r_up = r_up + 1
-                
-        elif pin0.read_digital() == a_state:
+        elif b == a:
             # throttle decreasing       
             p_down = p_down + 1
-        
-            if p_down == 24:
-                p_down = 0
-                r_down = r_down + 1
                 
         #print(position)    
         
-    a_prev_state = a_state
-    print("R up: ", r_up, "|", "R down: ", r_down)
+    a_prev_state = a
+    print("P up: ", p_up, "|", "P down: ", p_down)
     
     pitch = pin1.read_analog()
     roll = pin2.read_analog()
