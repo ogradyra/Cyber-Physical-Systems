@@ -28,14 +28,19 @@ def receiver():
     split_string = incoming.split(",")
     
     print(incoming)
-
+    
+    # roll 
     x = int(split_string[0])
+    # pitch
     y = int(split_string[1])
+    # height
     z = int(split_string[2])
+    # arm 
     a = int(split_string[3])
     
     print("x: ", x, " y: ", y, " z: ", z, " a: ", a)
     
+    # LED to show when drone is armed
     if a > 0:
         display.set_pixel(0, 0, 9)
     else:
@@ -44,7 +49,8 @@ def receiver():
    
    
 def driver(pitch, roll, throttle):
-
+    
+    # scaling
     p_int = int( 3.5 * pitch + 512)
     r_int = int( 3.5 * roll  + 521)
     t_int = int((512 * throttle)/50)
