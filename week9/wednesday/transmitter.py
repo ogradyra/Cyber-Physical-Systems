@@ -19,20 +19,22 @@ s = 0
 # time
 d = utime.ticks_ms()
 
+# function to retrieve height 
 def rotary_encoder():
     global height, s 
     
     # orange = A
-    a = pin3.read_analog()
+    a_in = pin3.read_analog()
     # green = B
-    b = pin0.read_analog()
+    b_in = pin0.read_analog()
     
-    if a > 512:
+    # if signal is ON, set a or b to 1, if signal is OFF, set a or b to 0
+    if a_in > 512:
         a = 1
     else:
         a = 0
         
-    if b > 512:
+    if b_in > 512:
         b = 1
     else:
         b = 0
@@ -41,7 +43,8 @@ def rotary_encoder():
     
     # Drone rising (throttle increase): B follows A
     # Drone falling (throttle decrease): A follows B
-  
+    
+    # if signals not equal, pulse has occured, either up or down
     if b != a and s == 0:
         # throttle increasing
         height = height + int(a)
@@ -49,12 +52,14 @@ def rotary_encoder():
         height = height - int(b)
         #flag high
         s = 1
-        
+    
+    # condition so that same pulse isn't counted twice - both signals must go to 0 again before another pulse can be counted
     elif b == 0 and a == 0:
         s = 0
     
     #print("Height: ", height)
-    
+
+# function to retrieve the pitch and roll values
 def toggle():
     global x, y
     
@@ -63,7 +68,9 @@ def toggle():
    
     #print("Pitch: ", pitch, "| Roll: ", roll)
     
+    	
     # convert to x and y coordinates
+    # only vary the pitch and roll between -10 and 10 so drone doesn't lean too much
     if pitch < 100:
         y = 10
     elif pitch > 100 and pitch < 200:
@@ -134,9 +141,11 @@ while True:
         arm = 0
         throttle_s = 0
     
-    
-    if utime.ticks_add(utime.ticks_ms(), -d) >= 50 or utime.ticks_add(utime.ticks_ms(), -d) < 0:
+    # if the difference in ticks between d (value saved when the program is first run) and ticks that have elapsed since is greater than 50, send radio data
+    # might have to change ticks_add to ticks_diff ??
+    if utime.ticks_diff(utime.ticks_ms(), -d) >= 50 or utime.ticks_diff(utime.ticks_ms(), -d) < 0:
         radio.send(str(x) + "," + str(y) + "," + str(z) + "," + str(arm))
+	# reset d, so this code can execute every 50 ms
         d = utime.ticks_ms()
     
     #print(d)
