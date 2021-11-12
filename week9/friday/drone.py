@@ -68,7 +68,7 @@ def driver(pitch, roll, throttle):
    
     arm = 900*a
     
-    print("P: ", p_int, " A: ", arm, " R: ", r_int, " T: ", t_int, " Y: ", y_int)
+    #print("P: ", p_int, " A: ", arm, " R: ", r_int, " T: ", t_int, " Y: ", y_int)
 
     buf[0] = 0
     buf[1] = 0x01
@@ -88,7 +88,7 @@ def driver(pitch, roll, throttle):
     buf[15] = 0 & 255
    
     uart.write(buf)
-    print(buf)
+    #print(buf)
    
 while True:
    
