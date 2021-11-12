@@ -21,6 +21,8 @@ a = 0
 t_flag = 0
 incoming = 0
 
+buf = bytearray(16)
+
 # function for splitting up incoming strings and assigning values for p,a,r,t,y
 def receiver():
     global x, y, z, a, t_flag
@@ -68,7 +70,6 @@ def driver(pitch, roll, throttle):
     
     print("P: ", p_int, " A: ", arm, " R: ", r_int, " T: ", t_int, " Y: ", y_int)
 
-    buf = bytearray(16)
     buf[0] = 0
     buf[1] = 0x01
     buf[2] = (0 << 2) | ((r_int >> 8) & 3)
