@@ -99,10 +99,6 @@ def yPID(yKp, yKi, yKd):
     
     error = 0 - y
     
-    # yP = error
-    # yI += error
-    # yD = error - yE
-    
     yD = error - yE #Difference between the errors (new - old error)
     
     if yD > 15: #If error too big
@@ -129,7 +125,8 @@ zE = 0
 zI = 0
 def zPID(zKp, zKi, zKd):
     global zE, zI
-    target_height = 45
+    target_height = 20 #Have target range instead of target height
+    #Have B pulses more than A pulses to counteract the lack of sensitivity for the downward pulses
     error = target_height - z
 
     zP = error
