@@ -20,6 +20,7 @@ z = 0
 a = 0
 t_flag = 0
 
+
 incoming = 0
 
 buf = bytearray(16)
@@ -29,7 +30,6 @@ def receiver():
     global x, y, z, a, t_flag
 
     split_string = incoming.split(",")
-   3
     #x = int(split_string[0])
     #y = int(split_string[1])
     z = int(split_string[2])
@@ -70,10 +70,15 @@ def xPID(xKp, xKi, xKd):
     global xE, xI
     
     error = 0 - x
+  
+    xD = error - xE #Difference between the errors (new - old error)
+    
+    if xD > 15: #If error too big
+        error = xE #Error doesn't change
+        xD = 0 #Same so no difference to rate of change
     
     xP = error
     xI += error
-    xD = error - xE
     
     xE = error
     
@@ -94,11 +99,21 @@ def yPID(yKp, yKi, yKd):
     
     error = 0 - y
     
+    # yP = error
+    # yI += error
+    # yD = error - yE
+    
+    yD = error - yE #Difference between the errors (new - old error)
+    
+    if yD > 15: #If error too big
+        error = yE #Error doesn't change
+        yD = 0 #Same so no difference to rate of change
+    
     yP = error
     yI += error
-    yD = error - yE
     
     yE = error
+
     
     pitch = yKp*yP + yKi*yI + yKd*yD
     
@@ -114,8 +129,8 @@ zE = 0
 zI = 0
 def zPID(zKp, zKi, zKd):
     global zE, zI
-
-    error = 45 - z
+    target_height = 45
+    error = target_height - z
 
     zP = error
     zI += error
@@ -185,6 +200,7 @@ while True:
             yI = 0
 
         driver(pitch, roll, throttle)
+    
         sleep(100)
     else:
         print("No Incoming Data")
