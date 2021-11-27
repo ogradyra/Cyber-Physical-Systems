@@ -5,7 +5,7 @@ Claudia, Rachel and Daniel :)
 ## Links
 ### Documentation
 - [Drone Notes](https://docs.google.com/document/d/1mzUDkRhHnkvjLE0Sy-6LmkqDHaynlPdhWon43XGht84/edit#)
-- [Reading Assignment](https://docs.google.com/document/d/1VV4ij-RU7IHtOzy6NmCRN_f5ZCQV6GQh8CXoJGnsM78/edit?usp=sharing)
+- [CPS Google Drive Folder](https://docs.google.com/document/d/1VV4ij-RU7IHtOzy6NmCRN_f5ZCQV6GQh8CXoJGnsM78/edit?usp=sharing)
 - [Final Report](https://www.overleaf.com/6552155188rqhgfzhzrhfv)
 ### Micropython
 - [Editor](https://python.microbit.org/v/2)
