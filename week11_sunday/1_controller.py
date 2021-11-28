@@ -25,8 +25,9 @@ throttle_flag = 0
 
 def battery_display(battery):
     charge = ((battery-300)/(1023-300))
+    display.set_pixel(0, 0, 9)
     #print(charge)
-    if charge >= 0.6 and charge < 0.8:
+    '''if charge >= 0.6 and charge < 0.8:
         display.set_pixel(4, 0, 0)
         display.set_pixel(4, 1, 9)
         display.set_pixel(4, 2, 9)
@@ -55,14 +56,14 @@ def battery_display(battery):
         display.set_pixel(4, 1, 9)
         display.set_pixel(4, 2, 9)
         display.set_pixel(4, 3, 9)
-        display.set_pixel(4, 4, 9)
+        display.set_pixel(4, 4, 9)'''
 
 # function to retrieve height 
 def rotary_encoder():
     global height, s 
     
     # orange = A
-    a_in = pin3.read_analog()
+    a_in = pin4.read_analog()
     # green = B
     b_in = pin0.read_analog()
     
@@ -85,7 +86,7 @@ def rotary_encoder():
         # throttle increasing
         height = height + int(a)
         # throttle decreasing 
-        height = height - int(b)
+        height = height - 2*(int(b))
         #flag high
         s = 1
     
@@ -93,7 +94,7 @@ def rotary_encoder():
     elif b == 0 and a == 0:
         s = 0
     
-    print("Height: ", height)
+    #print("Height: ", height)
     
 # function to retrieve the pitch and roll values
 def toggle():
@@ -112,15 +113,17 @@ def toggle():
     if x != 0:
         x = x/abs(x)
     
-    print("X: ", x, " Y: ", y)
+    #print("X: ", x, " Y: ", y)
 
 while True:
     
     message = radio.receive()
     if message:
         contents = message.split(',')
+        #print("Message: ", contents)
         if contents[0] == '1':
             if contents[1] == '0':
+                print("Battery: ", contents[2])
                 battery_display(int(contents[2]))
     
     # retrieve height
@@ -146,6 +149,6 @@ while True:
     # if the difference in ticks between d (value saved when the program is first run) and ticks that have elapsed since is greater than 50, send radio data
     # might have to change ticks_add to ticks_diff ??
     if utime.ticks_diff(utime.ticks_ms(), -d) >= 50 or utime.ticks_diff(utime.ticks_ms(), -d) < 0:
-        radio.send("0,0," + str(int(x)) + "," + str(int(y)) + "," + str(height) + "," + str(arm) + "," + str(throttle_flag))
+        radio.send("0" + "," + "0" + "," + str(int(x)) + "," + str(int(y)) + "," + str(height) + "," + str(arm) + "," + str(throttle_flag))
 	    # reset d, so this code can execute every 50 ms
         d = utime.ticks_ms()
