@@ -11,7 +11,7 @@ uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
 radio.on()
 radio.config(length=251)
 radio.config(channel=47)
-radio.config(queue=1)
+radio.config(queue=5)
 micropython.kbd_intr(-1)
 
 x = 0
@@ -27,7 +27,8 @@ buf = bytearray(16)
 
 def battery_read():
     battery = pin0.read_analog()
-    radio.send("1,0," + str(battery))
+    #print("Battery: ", battery)
+    radio.send("1" + "," + "0" + "," + str(battery))
     
     charge = ((battery-300)/(1023-300))
     #print(charge)
@@ -70,10 +71,13 @@ def receiver():
     
     if split_string[0] == '0':
         if split_string[1] == '0':
-            z = int(split_string[2])
-            a = int(split_string[3])
-            t_flag = int(split_string[4])
+            x = int(split_string[2])
+            y = int(split_string[3])
+            z = int(split_string[4])
+            a = int(split_string[5])
+            t_flag = int(split_string[6])
         elif split_string[1] == '1':
+            print("ACK: ", split_string[2])
             ack(split_string[2])
    
 def ack(signal):
@@ -100,8 +104,9 @@ def accelerometer_feedback():
         
     return Pitchtel, Rolltel
 
+# sends roll and pitch values to the montior
 def transmitter():
-    message = "2,0," + str(x) + "," + str(y)
+    message = "2" + "," + "0" + "," + str(x) + "," + str(y)
     radio.send(message)
 
 # PID for X-direction control
