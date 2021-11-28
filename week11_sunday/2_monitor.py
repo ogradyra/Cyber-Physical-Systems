@@ -13,15 +13,19 @@ while True:
     
     if incoming:
         string = incoming.split(",")
+        #print(string)
         address = int(string[0])
         if address == 2:
             if string[1] == '0':
-                pitch = int(string[1])
-                roll  = int(string[2])
-                print("Pitch: ", pitch, " Roll: ", roll)
-                radio.send("0,1,1")
+                pitch = int(string[2])
+                roll  = int(string[3])
+                #print("Pitch: ", pitch, " Roll: ", roll)
+                radio.send("0" + "," + "1" + "," + "1")
                 sleep(3000)
-            else:
-                radio.send("0,1,0")
+                
+                
+                
+'''     else:
+                radio.send("0"+ "," + "1" + "," + "0")
         else:
-            radio.send("0,1,0")
+            radio.send("0" + "," + "1" + "," + "0")'''
