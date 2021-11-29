@@ -11,7 +11,7 @@ uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
 radio.on()
 radio.config(length=251)
 radio.config(channel=47)
-radio.config(queue=1)
+radio.config(queue=5)
 micropython.kbd_intr(-1)
 
 x = 0
@@ -20,8 +20,8 @@ z = 0
 a = 0
 t_flag = 0
 
-targetx = 0
-targety = 0
+Pitchtel = 0
+Rolltel  = 0
 
 incoming = 0
 ACK = utime.ticks_ms()
@@ -68,20 +68,20 @@ def battery_read():
 
 # function for splitting up incoming strings and assigning values for p,a,r,t,y
 def receiver():
-    global targetx, targety, z, a, t_flag
+    global x, y, z, a, t_flag
 
     split_string = incoming.split(",")
     
     if split_string[0] == '0':
-        if split_string[1] == '0':
-            targetx = int(split_string[2])
-            targety = int(split_string[3])
+        if split_string[1] == '1':
+            print("ACK: ", split_string[2])
+            ack(split_string[2])
+        elif split_string[1] == '0':
+            x = int(split_string[2])
+            y = int(split_string[3])
             z = int(split_string[4])
             a = int(split_string[5])
             t_flag = int(split_string[6])
-        elif split_string[1] == '1':
-            print("ACK: ", split_string[2])
-            ack(split_string[2])
    
 def ack(signal):
     global ACK
@@ -90,8 +90,7 @@ def ack(signal):
         display.set_pixel(2, 2, 9)
 
 def accelerometer_feedback():
-    Pitchtel = 0
-    Rolltel  = 0
+    global Pitchtel, Rolltel
     
     #Rolltel = accelerometer.get_x()
     #Pitchtel = -accelerometer.get_y()
@@ -118,11 +117,11 @@ xI = 0
 def xPID(xKp, xKi, xKd):
     global xE, xI
     
-    error = targetx - x
+    error = 0 - x
   
     xD = error - xE #Difference between the errors (new - old error)
     
-    if xD > 10: #If error too big
+    if abs(xD) > 5: #If error too big
         error = xE #Error doesn't change
         xD = 0 #Same so no difference to rate of change
     
@@ -146,11 +145,11 @@ yI = 0
 def yPID(yKp, yKi, yKd):
     global yE, yI
     
-    error = targety - y
+    error = 0 - y
     
     yD = error - yE #Difference between the errors (new - old error)
     
-    if yD > 10: #If error too big
+    if abs(yD) > 5: #If error too big
         error = yE #Error doesn't change
         yD = 0 #Same so no difference to rate of change
     
@@ -225,14 +224,15 @@ while True:
     incoming = radio.receive()
 
     if incoming:
+        print("Incoming: ",incoming)
         receiver()
         x, y = accelerometer_feedback()
         transmitter()
         
         if t_flag == 1:
             throttle = zPID(2, 0, 0)
-            roll = xPID(0, 0.1, 1)
-            pitch = yPID(0, 0.1, 1)
+            roll = xPID(0.5, 0.01, 1)
+            pitch = yPID(0.5, 0, 1)
         else:
             throttle = 0
             roll = 0
@@ -251,11 +251,11 @@ while True:
             
         driver(pitch, roll, throttle)
         battery_read()
-        sleep(100)
-    else:
-        print("No Incoming Data")
+        sleep(10)
+    #else:
+        #print("No Incoming Data")
         
-    if utime.ticks_diff(utime.ticks_ms(), -ACK) >= 1000 or utime.ticks_diff(utime.ticks_ms(), -ACK) < 0:
-        display.set_pixel(2, 2, 0)
-	    # reset d, so this code can execute every 50 ms
+    if utime.ticks_diff(utime.ticks_ms(), ACK) >= 1000 or utime.ticks_diff(utime.ticks_ms(), ACK) < 0:
+        #print("reset")
+        display.set_pixel(2, 2, 0) # reset d, so this code can execute every 50 ms
         ACK = utime.ticks_ms()
