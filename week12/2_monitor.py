@@ -12,6 +12,7 @@ while True:
     incoming = radio.receive()
     
     if incoming:
+        #print("Incoming: ",incoming)
         string = incoming.split(",")
         #print(string)
         address = int(string[0])
