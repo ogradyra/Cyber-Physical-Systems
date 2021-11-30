@@ -81,34 +81,15 @@ def ledDisplay():
     
     
 while True:
-    if arm == 1 and utime.ticks_diff(utime.ticks_ms(), timer) >= 1000:
-        throttle_flag = 1
-
-    # check for low battery
-    # battery = radio.receive()
-    
-    # if battery:
-    #     b = float(battery)
-        
-    #     if b < 0.2:
-    #         display.show(Image.SKULL)
-            
-    #     total_battery = total_battery + b
-
-    #     print("Battery level:", (b / 1023) * 3.3, "V")
-    
     if button_a.is_pressed() and button_b.is_pressed():
         sleep(300)  # Without the delay, it was cycling too quickly through this 
                     # logic and turning the engines back off after turning them on
         if arm == 0:
             arm = 1
-            throttle = 0
-            timer = utime.ticks_ms()
+            throttle = 0 #Need this here
         else:
             arm = 0
-            throttle = 0
-            
-            throttle_flag = 0
+            throttle = 0 #Need this here (tested and this works best)
     
     if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
         throttle -= 5
@@ -133,19 +114,12 @@ while True:
         pitch = -30
     else:
         pitch = 0
-   
  
-    
     # shake command
     if accelerometer.is_gesture("shake"):
         arm = 0
         throttle = 0
     
     ledDisplay()
-	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
-    #radio.send("P_" + str(pitch) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle))
-    #radio.send("Y" + str(yaw))
-    radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm) + "," + str(throttle_flag))
-    print(throttle)
-    
-    sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
+    radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
+    sleep(50) 
