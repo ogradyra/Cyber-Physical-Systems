@@ -75,10 +75,10 @@ def receiver():
             targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
-        if split_string[1] == '1':
-            y2 = int(split_string[2])
-            x2 = int(split_string[3])
-            response(x2, y2)
+        # if split_string[1] == '1':
+        #     y2 = int(split_string[2])
+        #     x2 = int(split_string[3])
+        #     response(x2, y2)
  
 def accelerometer_feedback():
     global Pitchtel, Rolltel
@@ -90,11 +90,14 @@ def accelerometer_feedback():
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
 
-# sends roll and pitch values to the montior
-def response(x, y):
-    r = xPID(x, 0.5, 0.01, 1, 0)
-    p = yPID(y, 0.5, 0.01, 1, 0)
-    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
+# sends roll and pitch values to the mime
+#def response(x, y):
+    #r = xPID(x, 0.5, 0.01, 1, 0)
+    #p = yPID(y, 0.5, 0.01, 1, 0)
+    # message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
+    # radio.send(message)
+def response():
+    message = "2" + "," + "0" + "," + "0" + "," + "0" + "," + "0" + "," + str(a)
     radio.send(message)
 
 # PID for X-direction control
@@ -192,7 +195,7 @@ while True:
         accelerometer_feedback()
         roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
         pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.7)
-        
+        response()
         driver(pitch, roll, t)
         
         if a > 0:
