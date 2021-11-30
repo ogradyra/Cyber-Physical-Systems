@@ -5,8 +5,8 @@ from math import *
 import micropython
 import utime
 
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
@@ -23,15 +23,23 @@ a = 0
 def receiver():
     global p, r, t, a
     split_string = incoming.split(",")
-    
-    #print(split_string)
+    print(split_string)
     if split_string[0] == '2':
         if split_string[1] == '0':
-            p = int(split_string[2])
-            r = int(split_string[3])
+            p = float(split_string[2])
+            r = float(split_string[3])
             t = int(split_string[4])
             a = int(split_string[5])
             #radio.send("0" + "," + "1" + "," + "1")
+
+def accelerometer_feedback():
+    if uart.any():
+        data = uart.read()
+        datalist = list(data)
+        if isinstance(datalist, list) and len(datalist) >= 9:
+            Pitchtel = int(datalist[3]) - int(datalist[4])
+            Rolltel  = int(datalist[5]) - int(datalist[6])
+            radio.send("0,1," + str(Pitchtel) + "," + str(Rolltel))
 
 
 def driver(roll, pitch, throttle, a):
@@ -66,6 +74,7 @@ while True:
     
     if incoming:
         receiver()
+        accelerometer_feedback()
         driver(r, p, t, a)
         if a > 0:
             display.set_pixel(0, 0, 9)
