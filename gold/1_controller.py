@@ -12,11 +12,6 @@ roll = 0
 throttle = 0
 yaw = 0
 
-
-prev_r = 0
-prev_p = 0
-prev_y = 0
-
 pixel_y = 4
 pr_pixel_x = 1
 pr_pixel_y = 1
@@ -56,27 +51,27 @@ def ledDisplay():
     old_pr_pixel_y = pr_pixel_y
     display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
     
-    if (roll < -27):
-        pr_pixel_x = 0
-    elif (roll < -9):
+    if roll == -20: 
+        pr_pixel_x = 0 #left
+    elif roll == -5:
         pr_pixel_x = 1
-    elif (roll < 9):
+    elif roll == 0:
         pr_pixel_x = 2
-    elif (roll < 27):
+    elif roll == 5:
         pr_pixel_x = 3
     else:
-        pr_pixel_x = 4
+        pr_pixel_x = 4 #right
     
-    if (pitch < -27):
+    if pitch == 20: #forward
         pr_pixel_y = 0
-    elif (pitch < -9):
+    elif pitch == 5:
         pr_pixel_y = 1
-    elif (pitch < 9):
+    elif pitch == 0:
         pr_pixel_y = 2
-    elif (pitch < 27):
+    elif pitch == -5:
         pr_pixel_y = 3
     else:
-        pr_pixel_y = 4
+        pr_pixel_y = 4 #backward
     display.set_pixel(pr_pixel_x, pr_pixel_y, 9)
     
     
@@ -91,29 +86,37 @@ while True:
             arm = 0
             throttle = 0 #Need this here (tested and this works best)
     
-    if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
-        throttle -= 5
+    if button_a.is_pressed() and throttle >= 1: # Min value of throttle is 0
+        throttle -= 1
         
     if button_b.is_pressed() and throttle <= 90: # Max value of throttle is 100
-        throttle += 5
+        throttle += 1
         
 	
-    axis_y = accelerometer.get_y()
+    axis_y = -accelerometer.get_y()
     axis_x = accelerometer.get_x()
-
+    print(axis_y)
     if axis_x > 300:
-        roll = 30
-    elif axis_x < -300:
-        roll = -30
-    else:
+        roll = 20 
+    elif axis_x > 150:
+        roll = 5
+    elif axis_x > -150:
         roll = 0
-
-    if axis_y < -300:
-        pitch = 30
-    elif axis_y > 300:
-        pitch = -30
+    elif axis_x > -300:
+        roll = -5
     else:
+        roll = -20
+
+    if axis_y > 300:
+        pitch = 20
+    elif axis_y > 150:
+        pitch = 5
+    elif axis_y > -150:
         pitch = 0
+    elif axis_y > -300:
+        pitch = -5
+    else:
+        pitch = -20
  
     # shake command
     if accelerometer.is_gesture("shake"):
