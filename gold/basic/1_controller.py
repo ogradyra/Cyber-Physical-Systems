@@ -4,7 +4,7 @@ import utime
 
 radio.on() # TURNS ON USE OF ANTENNA ON MICROBIT
 radio.config(length=251)
-radio.config(channel=48) 
+radio.config(channel=47) 
 
 # INITIALISE COMMANDS
 # REMEMBER PARTY
@@ -118,12 +118,14 @@ while True:
             timer = utime.ticks_ms()
         else:
             arm = 0
+            throttle = 0
+            
             throttle_flag = 0
     
-    if button_a.was_pressed() and throttle >= 5: # Min value of throttle is 0
+    if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
         throttle -= 5
         
-    if button_b.was_pressed() and throttle <= 95: # Max value of throttle is 100
+    if button_b.is_pressed() and throttle <= 95: # Max value of throttle is 100
         throttle += 5
     
 	# USE ACCLEREROMETER CLASS FOR DEALING WITH ROLL, PITCH AND YAW (X, Y AND Z AXES)
@@ -148,18 +150,13 @@ while True:
     # yaw -> Changes where the front of the drone is facing (but dont move forwards
     # or backwards) Like twisting the lid of a bottle. Lid doesn't leave its position
     # but it does move
-    curr_y = accelerometer.get_z() 
-    print(curr_y)
+    curr_y = accelerometer.get_z()
     if prev_y > curr_y and yaw > -30:
         yaw -= 3
     elif curr_y > prev_y and yaw < 30:
         yaw += 3
     prev_y = curr_y
-    
-    #z = accelerometer.get_z() # yaw
-    #print(x)
-    #print(y)
-    #print(z)
+ 
     
     # shake command
     if accelerometer.is_gesture("shake"):
@@ -170,8 +167,7 @@ while True:
 	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
     #radio.send("P_" + str(pitch) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle))
     #radio.send("Y" + str(yaw))
-    radio.send("2" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm) + "," + str(throttle_flag))
-
-    #print(throttle)
+    radio.send("2" + "," + "0" + "," + str(roll) + "," + str(pitch) + "," + str(throttle) + "," + str(arm) + "," + str(throttle_flag))
+    print(throttle)
     
     sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
