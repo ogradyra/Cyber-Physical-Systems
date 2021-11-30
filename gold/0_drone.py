@@ -109,6 +109,8 @@ def accelerometer_feedback():
 # sends roll and pitch values to the montior
 def transmitter(p, r, t, a):
     message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(t) + "," + str(a)
+    # message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(a)
+    #message = " "
     radio.send(message)
 
 # PID for X-direction control
@@ -227,10 +229,12 @@ while True:
         print("Incoming: ",incoming)
         receiver()
         x, y = accelerometer_feedback()
+        #transmitter()
+        
         
         if t_flag == 1:
             throttle = zPID(2, 0, 0)
-            roll = xPID(0.5, 0.01, 1)
+            roll = xPID(0.5, 0, 1)
             pitch = yPID(0.5, 0, 1)
         else:
             throttle = 0
@@ -247,10 +251,10 @@ while True:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-            
+        
+        transmitter(int(pitch), int(roll), throttle, a)
         driver(pitch, roll, throttle)
-        #transmitter(int(pitch), int(roll), throttle, a)
-        #battery_read()
+        battery_read()
         sleep(10)
     #else:
         #print("No Incoming Data")
