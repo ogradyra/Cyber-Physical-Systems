@@ -11,14 +11,17 @@ buf = bytearray(16)
 
 radio.on()
 radio.config(length=251)
-radio.config(channel=47)
+radio.config(channel=49)
 radio.config(queue=1)
 micropython.kbd_intr(-1)
 
-pitch = 0
-roll = 0
-throttle = 0
+p = 0
+r = 0
+t = 0
 a = 0
+
+Pitchtel = 0
+Rolltel  = 0
 
 def receiver():
     global pitch, roll, throttle, a
@@ -27,13 +30,23 @@ def receiver():
     print(split_string)
     if split_string[0] == '2':
         if split_string[1] == '0':
-            pitch = int(split_string[2])
-            roll = int(split_string[3])
-            throttle = int(split_string[4])
+            p = int(split_string[2])
+            r = int(split_string[3])
+            t = int(split_string[4])
             a = int(split_string[5])
-            #radio.send("0" + "," + "1" + "," + "1")
 
-def driver():
+def accelerometer_feedback():
+    global Pitchtel, Rolltel
+
+    if uart.any():
+        data = uart.read()
+        datalist = list(data)
+        if isinstance(datalist, list) and len(datalist) >= 9:
+            Pitchtel = int(datalist[3]) - int(datalist[4])
+            Rolltel  = int(datalist[5]) - int(datalist[6])
+            radio.send("0,1," + str(Pitchtel) + "," + str(Rolltel))
+
+def driver(pitch, roll, throttle):
 
     p_int = int( 3.5 * pitch + 512)
     r_int = int( 3.5 * roll  + 521)
@@ -62,16 +75,16 @@ def driver():
     uart.write(buf)
 
 while True:
+    accelerometer_feedback()
     incoming = radio.receive()
     
     if incoming:
         receiver()
-        driver()
+        
         if a > 0:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
+            
+        driver(p, r, t)
         sleep(50)
-                
-                
-                
