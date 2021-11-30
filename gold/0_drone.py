@@ -71,15 +71,14 @@ def receiver():
     
     if split_string[0] == '0':
         if split_string[1] == '0':
-            targety = int(split_string[2])
-            targetx = int(split_string[3])
+            targety = float(split_string[2])
+            targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
         if split_string[1] == '1':
             y2 = int(split_string[2])
             x2 = int(split_string[3])
             response(x2, y2)
-            
  
 def accelerometer_feedback():
     global Pitchtel, Rolltel
@@ -90,22 +89,21 @@ def accelerometer_feedback():
         if isinstance(datalist, list) and len(datalist) >= 9:
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
-        
 
 # sends roll and pitch values to the montior
 def response(x, y):
-    r = xPID(x, 0.5, 0, 1)
-    p = yPID(y, 0.5, 0, 1)
+    r = xPID(x, 0.5, 0.01, 1, 0)
+    p = yPID(y, 0.5, 0.01, 1, 0)
     message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
     radio.send(message)
 
 # PID for X-direction control
 xE = 0
 xI = 0
-def xPID(x, xKp, xKi, xKd):
+def xPID(x, xKp, xKi, xKd, offset):
     global xE, xI
     
-    error = targetx - x
+    error = targetx + offset - x
   
     xD = error - xE #Difference between the errors (new - old error)
     
@@ -131,10 +129,10 @@ def xPID(x, xKp, xKi, xKd):
 # PID for Y-direction control
 yE = 0
 yI = 0
-def yPID(y, yKp, yKi, yKd):
+def yPID(y, yKp, yKi, yKd, offset):
     global yE, yI
     
-    error = targety - y
+    error = targety + offset - y
     
     yD = error - yE #Difference between the errors (new - old error)
     
@@ -192,8 +190,10 @@ while True:
         receiver()
         t = throttle
         accelerometer_feedback()
-        roll = xPID(Rolltel, 0.5, 0, 1)
-        pitch = yPID(Pitchtel, 0.5, 0, 1)
+        roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
+        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.7)
+        
+        driver(pitch, roll, t)
         
         if a > 0:
             display.set_pixel(0, 0, 9)
@@ -206,6 +206,6 @@ while True:
             yE = 0
             yI = 0
         
-        driver(pitch, roll, t)
+        
         battery_read()
-        sleep(100)
+        sleep(50)
