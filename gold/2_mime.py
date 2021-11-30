@@ -5,8 +5,8 @@ from math import *
 import micropython
 import utime
 
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
@@ -20,41 +20,28 @@ r = 0
 t = 0
 a = 0
 
-Pitchtel = 0
-Rolltel  = 0
-
 def receiver():
-    global pitch, roll, throttle, a
+    global p, r, t, a
     split_string = incoming.split(",")
     
-    print(split_string)
+    #print(split_string)
     if split_string[0] == '2':
         if split_string[1] == '0':
             p = int(split_string[2])
             r = int(split_string[3])
             t = int(split_string[4])
             a = int(split_string[5])
+            #radio.send("0" + "," + "1" + "," + "1")
 
-def accelerometer_feedback():
-    global Pitchtel, Rolltel
 
-    if uart.any():
-        data = uart.read()
-        datalist = list(data)
-        if isinstance(datalist, list) and len(datalist) >= 9:
-            Pitchtel = int(datalist[3]) - int(datalist[4])
-            Rolltel  = int(datalist[5]) - int(datalist[6])
-            radio.send("0,1," + str(Pitchtel) + "," + str(Rolltel))
-
-def driver(pitch, roll, throttle):
-
+def driver(roll, pitch, throttle, a):
     p_int = int( 3.5 * pitch + 512)
     r_int = int( 3.5 * roll  + 521)
     t_int = int((512 * throttle)/50)
     y_int = 512
    
     arm = 900*a
-
+    #print("P: ", p_int, "A: ", arm, "R: ", r_int, "T: ", t_int);
     buf[0] = 0
     buf[1] = 0x01
     buf[2] = (0 << 2) | ((r_int >> 8) & 3)
@@ -73,18 +60,15 @@ def driver(pitch, roll, throttle):
     buf[15] = 0 & 255
    
     uart.write(buf)
-
+    
 while True:
-    accelerometer_feedback()
     incoming = radio.receive()
     
     if incoming:
         receiver()
-        
+        driver(r, p, t, a)
         if a > 0:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-            
-        driver(p, r, t)
-        sleep(50)
+        sleep(100)
