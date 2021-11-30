@@ -1,149 +1,151 @@
-from microbit import *  # NEEDS TO BE INCLUDED IN ALL CODE WRITTEN FOR MICROBIT
-import radio  # WORTH CHECKING OUT RADIO CLASS IN BBC MICRO DOCS
+from microbit import * # NEEDS TO BE INCLUDED IN ALL CODE WRITTEN FOR MICROBIT
+import radio # WORTH CHECKING OUT RADIO CLASS IN BBC MICRO DOCS
 import utime
-import music
 
-radio.on()  # TURNS ON USE OF ANTENNA ON MICROBIT
+radio.on() # TURNS ON USE OF ANTENNA ON MICROBIT
 radio.config(length=251)
-radio.config(channel=47)
+radio.config(channel=49) 
 
-# INITIALISE COMMANDS
-x = 0 # roll
-y = 0 # pitch
+pitch = 0
 arm = 0
+roll = 0
 throttle = 0
+yaw = 0
 
-display.off()
-height = 0
-s = 0
-height_wanted = 40  #24 pulse in one rotation, we want 4 rotations. 96 pulses
-height_error = 0
 
-# time
-d = utime.ticks_ms()
+prev_r = 0
+prev_p = 0
+prev_y = 0
+
+pixel_y = 4
+pr_pixel_x = 1
+pr_pixel_y = 1
+
+total_battery: float = 0
 
 throttle_flag = 0
 
-def battery_display(battery):
-    
-    charge = ((battery-300)/(1023-300))
-    #print(charge)
-    
-    # communication from drone to controller
-    # Can't access the display because of analogs pins that are in use, so use music tone instead to indicate when battery low
-    if charge < 0.2:
-        music.play(music.DADADADUM)  
-        # arm = 0?
-
-# function to retrieve height 
-def rotary_encoder():
-    global height, s 
-    
-    # orange = A
-    a_in = pin4.read_analog()
-    # green = B
-    b_in = pin0.read_analog()
-    
-    # if signal is ON, set a or b to 1, if signal is OFF, set a or b to 0
-    if a_in > 512:
-        a = 1
+# use LEDs on controller to track throttle, arm, pitch and roll values
+def ledDisplay():
+    # Arm
+    if arm == 1:
+        display.set_pixel(0,0,9)
     else:
-        a = 0
+        display.set_pixel(0,0,0)
+    
+    # Throttle
+    # Pixel position moves as the throttle number increases
+    global pixel_y
+    old_pixel_y = pixel_y
+    display.set_pixel(0, old_pixel_y, 0) # To clear old pixel
+    
+    if throttle < 25:
+        pixel_y = 4
+    elif throttle < 50:
+        pixel_y = 3
+    elif throttle < 75:
+        pixel_y = 2
+    else:
+        pixel_y = 1
         
-    if b_in > 512:
-        b = 1
+    display.set_pixel(0, pixel_y, 9)
+    
+    # Pitch and Roll
+    global pr_pixel_x, pr_pixel_y
+    old_pr_pixel_x = pr_pixel_x
+    old_pr_pixel_y = pr_pixel_y
+    display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
+    
+    if (roll < -27):
+        pr_pixel_x = 0
+    elif (roll < -9):
+        pr_pixel_x = 1
+    elif (roll < 9):
+        pr_pixel_x = 2
+    elif (roll < 27):
+        pr_pixel_x = 3
     else:
-        b = 0
+        pr_pixel_x = 4
     
-    # Drone rising (throttle increase): B follows A
-    # Drone falling (throttle decrease): A follows B
-    
-    # if signals not equal, pulse has occured, either up or down
-    if b != a and s == 0:
-        # throttle increasing
-        height = height + int(a)
-        # throttle decreasing 
-        height = height - 2*(int(b))
-        #flag high
-        s = 1
-    
-    # condition so that same pulse isn't counted twice - both signals must go to 0 again before another pulse can be counted
-    elif b == 0 and a == 0:
-        s = 0
-    
-    #print("Height: ", height)
-    
-# function to retrieve the pitch and roll values
-def toggle():
-    global x, y
-    
-    roll = pin1.read_analog()
-    pitch = pin2.read_analog()
-   
-    # convert to x and y coordinates
-    # only vary the pitch and roll between -10 and 10 so drone doesn't lean too much
-    
-    if pitch > 812:
-        y = 0
-    elif pitch < 212:
-        y = 0
+    if (pitch < -27):
+        pr_pixel_y = 0
+    elif (pitch < -9):
+        pr_pixel_y = 1
+    elif (pitch < 9):
+        pr_pixel_y = 2
+    elif (pitch < 27):
+        pr_pixel_y = 3
     else:
-        y = 0
-        
+        pr_pixel_y = 4
+    display.set_pixel(pr_pixel_x, pr_pixel_y, 9)
     
-    if roll > 812:
-        x = 0
-    elif roll < 212:
-        x = 0
-    else:
-        x = 0
     
-    '''y = pitch - 512
-    if y != 0:
-        y = y/abs(y)
-        
-    x = roll - 512
-    if x != 0:
-        x = x/abs(x)'''
-    
-    #print("X: ", x, " Y: ", y)
-    print("Pitch: ", pitch, " Roll: ", roll)
-
 while True:
-    
-    message = radio.receive()
-    if message:
-        contents = message.split(',')
-        #print("Message: ", contents)
-        if contents[0] == '1':
-            if contents[1] == '0':
-                print("Battery: ", contents[2])
-                battery_display(int(contents[2]))
-    
-    # retrieve height
-    rotary_encoder()
-    # retrieve x and y coordinates from pitch and roll
-    toggle()
+    if arm == 1 and utime.ticks_diff(utime.ticks_ms(), timer) >= 1000:
+        throttle_flag = 1
 
-	# ON
-    if button_a.is_pressed():
+    # check for low battery
+    # battery = radio.receive()
+    
+    # if battery:
+    #     b = float(battery)
+        
+    #     if b < 0.2:
+    #         display.show(Image.SKULL)
+            
+    #     total_battery = total_battery + b
+
+    #     print("Battery level:", (b / 1023) * 3.3, "V")
+    
+    if button_a.is_pressed() and button_b.is_pressed():
         sleep(300)  # Without the delay, it was cycling too quickly through this 
                     # logic and turning the engines back off after turning them on
         if arm == 0:
             arm = 1
-            throttle_flag = 0
-            height = 0
+            throttle = 0
+            timer = utime.ticks_ms()
         else:
             arm = 0
+            throttle = 0
             
-    # Switch to height based throttle
-    if button_b.is_pressed():
-        throttle_flag = 1
+            throttle_flag = 0
     
-    # if the difference in ticks between d (value saved when the program is first run) and ticks that have elapsed since is greater than 50, send radio data
-    # might have to change ticks_add to ticks_diff ??
-    # this statement acts as the sleep
-    if utime.ticks_diff(utime.ticks_ms(), d) >= 100 or utime.ticks_diff(utime.ticks_ms(), d) < 0:
-        radio.send("0" + "," + "0" + "," + str(int(x)) + "," + str(int(y)) + "," + str(height) + "," + str(arm) + "," + str(throttle_flag))
-	    # reset d, so this code can execute every 50 ms
-        d = utime.ticks_ms()
+    if button_a.is_pressed() and throttle >= 5: # Min value of throttle is 0
+        throttle -= 5
+        
+    if button_b.is_pressed() and throttle <= 90: # Max value of throttle is 100
+        throttle += 5
+        
+	
+    axis_y = accelerometer.get_y()
+    axis_x = accelerometer.get_x()
+
+    if axis_x > 300:
+        roll = 30
+    elif axis_x < -300:
+        roll = -30
+    else:
+        roll = 0
+
+    if axis_y < -300:
+        pitch = 30
+    elif axis_y > 300:
+        pitch = -30
+    else:
+        pitch = 0
+   
+ 
+    
+    # shake command
+    if accelerometer.is_gesture("shake"):
+        arm = 0
+        throttle = 0
+    
+    ledDisplay()
+	# UPDATE COMMAND STRING TO BE SENT OUT WITH CONCATENATED PARTY COMMANDS
+    #radio.send("P_" + str(pitch) + "_A_" + str(arm) + "_R_" + str(roll) + "_T_" + str(throttle))
+    #radio.send("Y" + str(yaw))
+    radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm) + "," + str(throttle_flag))
+    print(throttle)
+    
+    sleep(50) # sleep() IS YOUR FRIEND, FIND GOOD VALUE FOR LENGTH OF SLEEP NEEDED TO FUNCTION WITHOUT COMMANDS GETTING MISSED BY THE DRONE
