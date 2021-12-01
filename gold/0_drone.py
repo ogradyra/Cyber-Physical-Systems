@@ -77,6 +77,7 @@ def receiver():
             a       = int(split_string[5])
         if split_string[1] == '2':
             #print("Telemetry Received")
+            print(split_string)
             y2 = int(split_string[2])
             x2 = int(split_string[3])
             response(y2, x2)
@@ -103,7 +104,7 @@ def response(mime_pitch,mime_roll):
     # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
     message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
     radio.send(message)
-    print(message)
+    #print(message)
 
 # PID for X-direction control
 xE = 0
