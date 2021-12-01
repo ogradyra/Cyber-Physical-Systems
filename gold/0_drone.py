@@ -199,8 +199,9 @@ while True:
         receiver()
         t = throttle
         accelerometer_feedback()
+        #xPID(x, xKp, xKi, xKd, offset)
         roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
-        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.7)
+        pitch = yPID(Pitchtel, 1, 0.01, 0.5, -5)
         
         driver(pitch, roll, t)
         
@@ -217,4 +218,4 @@ while True:
         
         
         battery_read()
-        sleep(50)
+        sleep(100) 
