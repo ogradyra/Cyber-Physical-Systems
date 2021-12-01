@@ -5,8 +5,8 @@ from math import *
 import micropython
 import utime
 
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
@@ -23,24 +23,20 @@ a = 0
 def receiver():
     global p, r, t, a
     split_string = incoming.split(",")
-    print(split_string)
+    
     if split_string[0] == '2':
+        print(split_string)
         if split_string[1] == '0':
-            p = float(split_string[2])
+            p = int(split_string[2])
             r = float(split_string[3])
             t = int(split_string[4])
             a = int(split_string[5])
             #radio.send("0" + "," + "1" + "," + "1")
 
-def accelerometer_feedback():
-    if uart.any():
-        data = uart.read()
-        datalist = list(data)
-        if isinstance(datalist, list) and len(datalist) >= 9:
-            Pitchtel = int(datalist[3]) - int(datalist[4])
-            Rolltel  = int(datalist[5]) - int(datalist[6])
-            radio.send("0,1," + str(Pitchtel) + "," + str(Rolltel))
-
+def send_telem():
+    # [0 = Drone Adress, 1 = Message comes from Mime, Pitch, Roll]
+    radio.send("0" + "," + "2" + "," + "1" + "," + "-1")
+    #print("Sent")
 
 def driver(roll, pitch, throttle, a):
     p_int = int( 3.5 * pitch + 512)
@@ -74,10 +70,10 @@ while True:
     
     if incoming:
         receiver()
-        accelerometer_feedback()
+        send_telem()
         driver(r, p, t, a)
         if a > 0:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-        sleep(100)
+        sleep(50) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep
