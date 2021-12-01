@@ -98,9 +98,10 @@ def accelerometer_feedback():
     # message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
     # radio.send(message)
 def response(mime_pitch,mime_roll):
-    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
     r = xPID(mime_roll, 0.5, 0.01, 1, 0)
-    message = "2" + "," + "0" + "," + "0" + "," + str(r) + "," + "0" + "," + str(a)
+    p = yPID(mime_pitch, 0.5, 0.01, 1, 0)
+    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
+    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
     radio.send(message)
     print(message)
 
