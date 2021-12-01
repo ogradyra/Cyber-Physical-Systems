@@ -89,7 +89,7 @@ while True:
     if button_a.is_pressed() and throttle >= 1: # Min value of throttle is 0
         throttle -= 1
         
-    if button_b.is_pressed() and throttle <= 90: # Max value of throttle is 100
+    if button_b.is_pressed() and throttle <= 60: # Max value of throttle is 100
         throttle += 1
         
 	
@@ -124,5 +124,7 @@ while True:
         throttle = 0
     
     ledDisplay()
-    radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
+    # 2=Mime 0=Drone, ____ , pitch, roll, throttle, arm
+    #radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
+    radio.send("0" + "," + "0" + "," + "0" + "," + "0" + "," + str(throttle) + "," + str(arm))
     sleep(50) 
