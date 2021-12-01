@@ -5,8 +5,8 @@ from math import *
 import micropython
 import utime
 
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
@@ -19,6 +19,9 @@ p = 0
 r = 0
 t = 0
 a = 0
+
+Pitchtel = 0
+Rolltel = 0
 
 def receiver():
     global p, r, t, a
@@ -34,8 +37,17 @@ def receiver():
             #radio.send("0" + "," + "1" + "," + "1")
 
 def send_telem():
+    global Pitchtel, Rolltel
+
+    if uart.any():
+        data = uart.read()
+        datalist = list(data)
+        if isinstance(datalist, list) and len(datalist) >= 9:
+            Pitchtel = int(datalist[3]) - int(datalist[4])
+            Rolltel  = int(datalist[5]) - int(datalist[6])
+    
     # [0 = Drone Adress, 1 = Message comes from Mime, Pitch, Roll]
-    radio.send("0" + "," + "2" + "," + "1" + "," + "-1")
+    radio.send("0" + "," + "2" + "," + str(Pitchtel) + "," + str(Rolltel))
     #print("Sent")
 
 def driver(roll, pitch, throttle, a):
