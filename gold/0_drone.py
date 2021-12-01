@@ -68,22 +68,19 @@ def receiver():
     global targetx, targety, throttle, a
 
     split_string = incoming.split(",")
-    print(split_string[1])
+    
     if split_string[0] == '0':
         if split_string[1] == '0':
             targety = float(split_string[2])
             targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
-        if split_string[1] == '1': #Flash pixel when Mime incoming
-            print("Here")
-            test()
+        if split_string[1] == '2':
+            #print("Telemetry Received")
             y2 = int(split_string[2])
             x2 = int(split_string[3])
-            response(x2, y2, throttle, a)
-
-def test():
-    print("Entered test")
+            response(y2, x2)
+ 
 def accelerometer_feedback():
     global Pitchtel, Rolltel
 
@@ -100,11 +97,10 @@ def accelerometer_feedback():
     #p = yPID(y, 0.5, 0.01, 1, 0)
     # message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
     # radio.send(message)
-def response(x,y, throttle, a):
-    # r = xPID(x, 0.5, 0.01, 1, 0)
-    # p = yPID(y, 0.5, 0.01, 1, 0)
-    message = "2" + "," + "0" + "," + "0" + "," + "0" + "," + "0" + "," + str(a)
-    #message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
+def response(mime_pitch,mime_roll):
+    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
+    r = xPID(mime_roll, 0.5, 0.01, 1, 0)
+    message = "2" + "," + "0" + "," + "0" + "," + str(r) + "," + "0" + "," + str(a)
     radio.send(message)
     print(message)
 
@@ -203,7 +199,7 @@ while True:
         accelerometer_feedback()
         roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
         pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.7)
-        #response()
+        
         driver(pitch, roll, t)
         
         if a > 0:
