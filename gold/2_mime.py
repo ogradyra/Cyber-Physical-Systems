@@ -5,8 +5,8 @@ from math import *
 import micropython
 import utime
 
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
@@ -27,7 +27,7 @@ def receiver():
     if split_string[0] == '2':
         print(split_string)
         if split_string[1] == '0':
-            p = int(split_string[2])
+            p = float(split_string[2])
             r = float(split_string[3])
             t = int(split_string[4])
             a = int(split_string[5])
