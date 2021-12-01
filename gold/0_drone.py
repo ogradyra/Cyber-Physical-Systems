@@ -201,7 +201,7 @@ while True:
         accelerometer_feedback()
         #xPID(x, xKp, xKi, xKd, offset)
         roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
-        pitch = yPID(Pitchtel, 1, 0.01, 0.5, -5)
+        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.8) #Positive offset makes it go forwards
         
         driver(pitch, roll, t)
         
