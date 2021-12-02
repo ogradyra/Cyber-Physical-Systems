@@ -69,13 +69,13 @@ def receiver():
 
     split_string = incoming.split(",")
     
-    if split_string[0] == '0':
-        if split_string[1] == '0':
+    if split_string[0] == '0': #Drone is receiver of message
+        if split_string[1] == '1': #Controller is sender of message
             targety = float(split_string[2])
             targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
-        if split_string[1] == '2':
+        if split_string[1] == '2': #Mime is sender of message
             #print("Telemetry Received")
             print(split_string)
             y2 = int(split_string[2])
