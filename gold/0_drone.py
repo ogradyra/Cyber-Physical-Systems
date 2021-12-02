@@ -93,14 +93,11 @@ def accelerometer_feedback():
             Rolltel  = int(datalist[5]) - int(datalist[6])
 
 # sends roll and pitch values to the mime
-#def response(x, y):
-    #r = xPID(x, 0.5, 0.01, 1, 0)
-    #p = yPID(y, 0.5, 0.01, 1, 0)
-    # message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
-    # radio.send(message)
 def response(mime_pitch,mime_roll):
+    #xPID(x, xKp, xKi, xKd, offset)
     r = xPID(mime_roll, 0.5, 0.01, 1, 0)
     p = yPID(mime_pitch, 0.5, 0.01, 1, 0)
+    
     # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
     message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
     radio.send(message)
@@ -200,8 +197,8 @@ while True:
         t = throttle
         accelerometer_feedback()
         #xPID(x, xKp, xKi, xKd, offset)
-        roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
-        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.8) #Positive offset makes it go forwards
+        roll = xPID(Rolltel, 1, 0.01, 0.5, -2.2)
+        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 2.6) #Positive offset makes it go forwards
         
         driver(pitch, roll, t)
         
@@ -218,4 +215,4 @@ while True:
         
         
         battery_read()
-        sleep(100) 
+        sleep(55) 
