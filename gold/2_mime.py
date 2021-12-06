@@ -5,13 +5,13 @@ from math import *
 import micropython
 import utime
 
-#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
-uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
+uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
+#uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=None, rx=None)
 buf = bytearray(16)
 
 radio.on()
 radio.config(length=251)
-radio.config(channel=49)
+radio.config(channel=47)
 radio.config(queue=1)
 micropython.kbd_intr(-1)
 
@@ -21,21 +21,22 @@ t = 0
 a = 0
 
 Pitchtel = 0
-Rolltel  = 0
+Rolltel = 0
 
 def receiver():
-    global pitch, roll, throttle, a
+    global p, r, t, a
     split_string = incoming.split(",")
     
-    print(split_string)
-    if split_string[0] == '2':
+    if split_string[0] == '0':
+        #print(split_string)
         if split_string[1] == '0':
-            p = int(split_string[2])
-            r = int(split_string[3])
+            p = float(split_string[2])
+            r = float(split_string[3])
             t = int(split_string[4])
             a = int(split_string[5])
+            #radio.send("0" + "," + "1" + "," + "1")
 
-def accelerometer_feedback():
+def send_telem():
     global Pitchtel, Rolltel
 
     if uart.any():
@@ -44,17 +45,19 @@ def accelerometer_feedback():
         if isinstance(datalist, list) and len(datalist) >= 9:
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
-            radio.send("0,1," + str(Pitchtel) + "," + str(Rolltel))
+    
+    # [0 = Drone Adress, 1 = Message comes from Mime, Pitch, Roll]
+    radio.send("0" + "," + "2" + "," + str(Pitchtel) + "," + str(Rolltel))
+    #print("Sent")
 
-def driver(pitch, roll, throttle):
-
+def driver(roll, pitch, throttle, a):
     p_int = int( 3.5 * pitch + 512)
     r_int = int( 3.5 * roll  + 521)
     t_int = int((512 * throttle)/50)
     y_int = 512
    
     arm = 900*a
-
+    #print("P: ", p_int, "A: ", arm, "R: ", r_int, "T: ", t_int);
     buf[0] = 0
     buf[1] = 0x01
     buf[2] = (0 << 2) | ((r_int >> 8) & 3)
@@ -71,20 +74,19 @@ def driver(pitch, roll, throttle):
     buf[13] = 225 & 255
     buf[14] = (6 << 2) | ((0 >> 8) & 3)
     buf[15] = 0 & 255
-   
+    
     uart.write(buf)
-
+    
 while True:
-    accelerometer_feedback()
     incoming = radio.receive()
     
     if incoming:
         receiver()
-        
+        send_telem()
+        driver(r, p, t, a)
         if a > 0:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-            
-        driver(p, r, t)
-        sleep(50)
+        sleep(50) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep
+
