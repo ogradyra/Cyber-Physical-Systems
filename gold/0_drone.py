@@ -10,7 +10,7 @@ uart.init(baudrate=115200, bits=8, parity=None, stop=1, tx=pin1, rx=pin2)
 
 radio.on()
 radio.config(length=251)
-radio.config(channel=49)
+radio.config(channel=47)
 radio.config(queue=1)
 micropython.kbd_intr(-1)
 
@@ -69,16 +69,18 @@ def receiver():
 
     split_string = incoming.split(",")
     
-    if split_string[0] == '0':
-        if split_string[1] == '0':
+    if split_string[0] == '0': #Drone is receiver of message
+        if split_string[1] == '1': #Controller is sender of message
             targety = float(split_string[2])
             targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
-        if split_string[1] == '1':
+        if split_string[1] == '2': #Mime is sender of message
+            #print("Telemetry Received")
+            print(split_string)
             y2 = int(split_string[2])
             x2 = int(split_string[3])
-            response(x2, y2)
+            response(y2, x2)
  
 def accelerometer_feedback():
     global Pitchtel, Rolltel
@@ -90,12 +92,16 @@ def accelerometer_feedback():
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
 
-# sends roll and pitch values to the montior
-def response(x, y):
-    r = xPID(x, 0.5, 0.01, 1, 0)
-    p = yPID(y, 0.5, 0.01, 1, 0)
-    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
+# sends roll and pitch values to the mime
+def response(mime_pitch,mime_roll):
+    #xPID(x, xKp, xKi, xKd, offset)
+    r = xPID(mime_roll, 0.5, 0.01, 1, 0)
+    p = yPID(mime_pitch, 0.5, 0.01, 1, 0)
+    
+    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
+    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
     radio.send(message)
+    #print(message)
 
 # PID for X-direction control
 xE = 0
@@ -190,8 +196,9 @@ while True:
         receiver()
         t = throttle
         accelerometer_feedback()
-        roll = xPID(Rolltel, 1, 0.01, 0.5, -2)
-        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 3.7)
+        #xPID(x, xKp, xKi, xKd, offset)
+        roll = xPID(Rolltel, 1, 0.01, 0.5, -2.2)
+        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 2.6) #Positive offset makes it go forwards
         
         driver(pitch, roll, t)
         
@@ -208,4 +215,5 @@ while True:
         
         
         battery_read()
-        sleep(50)
+        sleep(55) 
+
