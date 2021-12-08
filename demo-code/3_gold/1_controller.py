@@ -125,6 +125,6 @@ while True:
     
     ledDisplay()
     # 2=Mime 0=Drone, ____ , pitch, roll, throttle, arm
-    #radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
+    #radio.send("0" + "," + "1" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
     radio.send("0" + "," + "1" + "," + "0" + "," + "0" + "," + str(throttle) + "," + str(arm))
     sleep(50) 
