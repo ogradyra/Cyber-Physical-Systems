@@ -27,6 +27,15 @@ ACK = utime.ticks_ms()
 
 buf = bytearray(16)
 
+xE1 = 0
+xI1 = 0
+yE1 = 0
+yI1 = 0
+xE2 = 0
+xI2 = 0
+yE2 = 0
+yI2 = 0
+
 def battery_read():
     battery = pin0.read_analog()
     radio.send("1" + "," + "0" + "," + str(battery))
@@ -75,9 +84,7 @@ def receiver():
             targetx = float(split_string[3])
             throttle= int(split_string[4])
             a       = int(split_string[5])
-        if split_string[1] == '2': #Mime is sender of message
-            #print("Telemetry Received")
-            print(split_string)
+        elif split_string[1] == '2': #Mime is sender of message
             y2 = int(split_string[2])
             x2 = int(split_string[3])
             response(y2, x2)
@@ -94,72 +101,40 @@ def accelerometer_feedback():
 
 # sends roll and pitch values to the mime
 def response(mime_pitch,mime_roll):
+    global xE2, xI2, yE2, yI2
     #xPID(x, xKp, xKi, xKd, offset)
-    r = xPID(mime_roll, 0.5, 0.01, 1, 0)
-    p = yPID(mime_pitch, 0.5, 0.01, 1, 0)
+    r, xE2, xI2 = PID(mime_roll, targetx, 1, 0.01, 0.5, 2.25, xE2, xI2)
+    p, yE2, yI2 = PID(mime_pitch, targety, 1, 0.01, 0.5, 0, yE2, yE2)
     
     # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
-    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
+    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
     radio.send(message)
-    #print(message)
 
-# PID for X-direction control
-xE = 0
-xI = 0
-def xPID(x, xKp, xKi, xKd, offset):
-    global xE, xI
+# Generic PID for XY-direction control
+def PID(current, target, Kp, Ki, Kd, offset, E, I):
+
+    error = target + offset - current
     
-    error = targetx + offset - x
-  
-    xD = error - xE #Difference between the errors (new - old error)
-    
-    # #Low-Pass Filter
-    # if abs(xD) > 5:
-    #     error = xE
-    #     xD = 0
-    
-    xP = error
-    xI += error
-    
-    xE = error
-    
-    roll = xKp*xP + xKi*xI + xKd*xD
-    
-    if roll > 85:
-        roll = 85
-    if roll < -85:
-        roll = -85
-    
-    return roll
-    
-# PID for Y-direction control
-yE = 0
-yI = 0
-def yPID(y, yKp, yKi, yKd, offset):
-    global yE, yI
-    
-    error = targety + offset - y
-    
-    yD = error - yE #Difference between the errors (new - old error)
+    D = error - E #Difference between the errors (new - old error)
     
     # #Low-Pass Filter
     # if abs(yD) > 5:
     #     error = yE 
     #     yD = 0 
     
-    yP = error
-    yI += error
+    P = error
+    I += error
     
-    yE = error
+    E = error
 
-    pitch = yKp*yP + yKi*yI + yKd*yD
+    result = Kp*P + Ki*I + Kd*D
     
-    if pitch > 85:
-        pitch = 85
-    if pitch < -85:
-        pitch = -85
+    if result > 85:
+        result = 85
+    if result < -85:
+        result = -85
     
-    return pitch  
+    return result, E, I  
    
 def driver(pitch, roll, t):
 
@@ -196,9 +171,10 @@ while True:
         receiver()
         t = throttle
         accelerometer_feedback()
+        
         #xPID(x, xKp, xKi, xKd, offset)
-        roll = xPID(Rolltel, 1, 0.01, 0.5, -2.2)
-        pitch = yPID(Pitchtel, 1, 0.01, 0.5, 2.6) #Positive offset makes it go forwards
+        roll, yE1, xI1  = PID(Rolltel, targetx, 1, 0.01, 0.5, -2.2, xE1, xI1)
+        pitch, xE1, xI1 = PID(Pitchtel, targety, 1, 0.01, 0.5, 2.6, yE1, yE1) #Positive offset makes it go forwards
         
         driver(pitch, roll, t)
         
@@ -206,14 +182,14 @@ while True:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-            zE = 0
-            zI = 0
-            xE = 0
-            xI = 0
-            yE = 0
-            yI = 0
-        
+            xE1 = 0
+            xI1 = 0
+            yE1 = 0
+            yI1 = 0
+            xE2 = 0
+            xI2 = 0
+            yE2 = 0
+            yI2 = 0
         
         battery_read()
-        sleep(55) 
-
+        sleep(10) 
