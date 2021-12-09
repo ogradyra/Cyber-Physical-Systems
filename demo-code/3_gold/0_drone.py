@@ -22,6 +22,9 @@ targety  = 0
 Pitchtel = 0
 Rolltel  = 0
 
+mime_pitch = 0
+mime_roll  = 0
+
 incoming = 0
 ACK = utime.ticks_ms()
 
@@ -74,7 +77,7 @@ def battery_read():
 
 # function for splitting up incoming strings and assigning values for p,a,r,t,y
 def receiver():
-    global targetx, targety, throttle, a
+    global targetx, targety, throttle, a, mime_pitch, mime_roll
 
     split_string = incoming.split(",")
     
@@ -85,9 +88,8 @@ def receiver():
             throttle= int(split_string[4])
             a       = int(split_string[5])
         elif split_string[1] == '2': #Mime is sender of message
-            y2 = int(split_string[2])
-            x2 = int(split_string[3])
-            response(y2, x2)
+            mime_roll = int(split_string[2])
+            mime_pitch = int(split_string[3])
  
 def accelerometer_feedback():
     global Pitchtel, Rolltel
@@ -99,17 +101,6 @@ def accelerometer_feedback():
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
 
-# sends roll and pitch values to the mime
-def response(mime_pitch,mime_roll):
-    global xE2, xI2, yE2, yI2
-    #xPID(x, xKp, xKi, xKd, offset)
-    r, xE2, xI2 = PID(mime_roll, targetx, 1, 0.01, 0.5, 2.25, xE2, xI2)
-    p, yE2, yI2 = PID(mime_pitch, targety, 1, 0.01, 0.5, 0, yE2, yE2)
-    
-    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
-    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(throttle) + "," + str(a)
-    radio.send(message)
-
 # Generic PID for XY-direction control
 def PID(current, target, Kp, Ki, Kd, offset, E, I):
 
@@ -117,10 +108,10 @@ def PID(current, target, Kp, Ki, Kd, offset, E, I):
     
     D = error - E #Difference between the errors (new - old error)
     
-    # #Low-Pass Filter
-    # if abs(yD) > 5:
-    #     error = yE 
-    #     yD = 0 
+    #Low-Pass Filter
+    if abs(D) > 5:
+        error = E 
+        D = 0
     
     P = error
     I += error
@@ -162,7 +153,7 @@ def driver(pitch, roll, t):
     buf[14] = (6 << 2) | ((0 >> 8) & 3)
     buf[15] = 0 & 255
    
-    uart.write(buf)
+    #uart.write(buf)
    
 while True:
     incoming = radio.receive()
@@ -173,8 +164,14 @@ while True:
         accelerometer_feedback()
         
         #xPID(x, xKp, xKi, xKd, offset)
-        roll, yE1, xI1  = PID(Rolltel, targetx, 1, 0.01, 0.5, -2.2, xE1, xI1)
-        pitch, xE1, xI1 = PID(Pitchtel, targety, 1, 0.01, 0.5, 2.6, yE1, yE1) #Positive offset makes it go forwards
+        roll, yE1, xI1  = PID(Rolltel, targetx, 1, 0.01, 0.5, -1.1, xE1, xI1)
+        pitch, xE1, xI1 = PID(Pitchtel, targety, 1, 0.01, 0.5, 1.2, yE1, yE1)
+        r, xE2, xI2 = PID(mime_roll, targetx, 1, 0.01, 0.5, 0.5, xE2, xI2)
+        p, yE2, yI2 = PID(mime_pitch, targety, 1, 0.01, 0.5, 3, yE2, yE2)
+    
+        # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
+        message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + str(t) + "," + str(a)
+        radio.send(message)
         
         driver(pitch, roll, t)
         
