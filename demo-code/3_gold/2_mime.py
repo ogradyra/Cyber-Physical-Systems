@@ -63,7 +63,7 @@ def receiver():
     split_string = incoming.split(",")
     
     if split_string[0] == '2':
-        #print(split_string)
+        print(split_string)
         if split_string[1] == '0':
             p = float(split_string[2])
             r = float(split_string[3])
@@ -114,7 +114,7 @@ def driver(roll, pitch, throttle, a):
     
 while True:
     incoming = radio.receive()
-    send_telem()
+    #send_telem()
     
     if incoming:
         receiver()
@@ -126,4 +126,4 @@ while True:
             display.set_pixel(0, 0, 0)
         
         battery_read()
-        sleep(50) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep
+        sleep(10) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep
