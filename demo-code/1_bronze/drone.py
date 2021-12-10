@@ -87,17 +87,6 @@ def accelerometer_feedback():
             Pitchtel = int(datalist[3]) - int(datalist[4])
             Rolltel  = int(datalist[5]) - int(datalist[6])
 
-# sends roll and pitch values to the mime
-def response(mime_pitch,mime_roll):
-    #xPID(x, xKp, xKi, xKd, offset)
-    r = xPID(mime_roll, 0.5, 0.01, 1, 0)
-    p = yPID(mime_pitch, 0.5, 0.01, 1, 0)
-    
-    # [2 = Mime Address, 0 = Message comes from Drone, P, R, T, A]
-    message = "2" + "," + "0" + "," + str(p) + "," + str(r) + "," + "0" + "," + str(a)
-    radio.send(message)
-    #print(message)
-
 # PID for X-direction control
 xE = 0
 xI = 0
@@ -178,7 +167,8 @@ def zPID(z, zKp, zKi, zKd):
         throttle = 0
     
     return throttle
-   
+
+# Function for writing values to the control board
 def driver(pitch, roll, throttle):
 
     p_int = int( 3.5 * pitch + 512)
@@ -206,7 +196,8 @@ def driver(pitch, roll, throttle):
     buf[15] = 0 & 255
    
     uart.write(buf)
-   
+
+# Infinite Loop
 while True:
     incoming = radio.receive()
 
