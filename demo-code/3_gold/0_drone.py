@@ -156,7 +156,7 @@ def driver(pitch, roll, t):
     buf[14] = (6 << 2) | ((0 >> 8) & 3)
     buf[15] = 0 & 255
    
-    #uart.write(buf)
+    uart.write(buf)
    
 while True:
     incoming = radio.receive()
