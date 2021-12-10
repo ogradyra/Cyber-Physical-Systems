@@ -109,17 +109,16 @@ def xPID(x, xKp, xKi, xKd, offset):
   
     xD = error - xE #Difference between the errors (new - old error)
     
+    temp = error
     #Low-Pass Filter
     if abs(xD) > 10:
-        temp = error
         error = xE
-        xE = temp
         xD = 0
-    
+        
     xP = error
     xI += error
     
-    xE = error
+    xE = temp
     
     roll = xKp*xP + xKi*xI + xKd*xD
     
@@ -140,17 +139,16 @@ def yPID(y, yKp, yKi, yKd, offset):
     
     yD = error - yE #Difference between the errors (new - old error)
     
+    temp = error
     #Low-Pass Filter
     if abs(yD) > 10:
-        temp = error
         error = yE
-        yE = temp
         yD = 0
     
     yP = error
     yI += error
     
-    yE = error
+    yE = temp
 
     pitch = yKp*yP + yKi*yI + yKd*yD
     
