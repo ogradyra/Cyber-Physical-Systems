@@ -109,17 +109,16 @@ def PID(current, target, Kp, Ki, Kd, offset, E, I):
     #Difference between the errors (new - old error)
     D = error - E
     
+    temp = error
     #Low-Pass Filter
     if abs(D) > 15:
-        temp = error
         error = E
-        E = temp
         D = 0
     
     P = error
     I += error
     
-    E = error
+    E = temp
 
     result = Kp*P + Ki*I + Kd*D
     
