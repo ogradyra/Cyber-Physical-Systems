@@ -98,8 +98,10 @@ def xPID(x, xKp, xKi, xKd, offset):
     xD = error - xE #Difference between the errors (new - old error)
     
     #Low-Pass Filter
-    if abs(xD) > 5:
+    if abs(xD) > 10:
+        temp = error
         error = xE
+        xE = temp
         xD = 0
     
     xP = error
@@ -127,9 +129,11 @@ def yPID(y, yKp, yKi, yKd, offset):
     yD = error - yE #Difference between the errors (new - old error)
     
     #Low-Pass Filter
-    if abs(yD) > 5:
-        error = yE 
-        yD = 0 
+    if abs(yD) > 10:
+        temp = error
+        error = yE
+        yE = temp
+        yD = 0
     
     yP = error
     yI += error
