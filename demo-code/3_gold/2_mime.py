@@ -23,12 +23,47 @@ a = 0
 Pitchtel = 0
 Rolltel = 0
 
+def battery_read():
+    battery = pin0.read_analog()
+    
+    charge = ((battery-300)/(1023-300))
+    if charge >= 0.6 and charge < 0.8:
+        display.set_pixel(4, 0, 0)
+        display.set_pixel(4, 1, 9)
+        display.set_pixel(4, 2, 9)
+        display.set_pixel(4, 3, 9)
+        display.set_pixel(4, 4, 9)
+
+    elif charge >= 0.4 and charge < 0.6:
+        display.set_pixel(4, 0, 0)
+        display.set_pixel(4, 1, 0)
+        display.set_pixel(4, 2, 9)
+        display.set_pixel(4, 3, 9)
+        display.set_pixel(4, 4, 9)
+
+    elif charge >= 0.2 and charge < 0.4:
+        display.set_pixel(4, 0, 0)
+        display.set_pixel(4, 1, 0)
+        display.set_pixel(4, 2, 0)
+        display.set_pixel(4, 3, 9)
+        display.set_pixel(4, 4, 9)
+
+    elif charge < 0.2:
+        display.show(Image.SKULL)
+
+    else:
+        display.set_pixel(4, 0, 9)
+        display.set_pixel(4, 1, 9)
+        display.set_pixel(4, 2, 9)
+        display.set_pixel(4, 3, 9)
+        display.set_pixel(4, 4, 9)
+
 def receiver():
     global p, r, t, a
     split_string = incoming.split(",")
     
-    if split_string[0] == '0':
-        #print(split_string)
+    if split_string[0] == '2':
+        print(split_string)
         if split_string[1] == '0':
             p = float(split_string[2])
             r = float(split_string[3])
@@ -79,14 +114,16 @@ def driver(roll, pitch, throttle, a):
     
 while True:
     incoming = radio.receive()
+    #send_telem()
     
     if incoming:
         receiver()
-        send_telem()
+        
         driver(r, p, t, a)
         if a > 0:
             display.set_pixel(0, 0, 9)
         else:
             display.set_pixel(0, 0, 0)
-        sleep(50) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep
-
+        
+        battery_read()
+        sleep(10) #Sleep of 100 means we read the first 5/10 commands from drone and then stop seeing them after the sleep

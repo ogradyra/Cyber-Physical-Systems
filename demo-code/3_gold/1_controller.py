@@ -51,24 +51,24 @@ def ledDisplay():
     old_pr_pixel_y = pr_pixel_y
     display.set_pixel(old_pr_pixel_x, old_pr_pixel_y, 0) # To clear old pixel
     
-    if roll == -20: 
+    if roll < -30: 
         pr_pixel_x = 0 #left
-    elif roll == -5:
+    elif roll < 0:
         pr_pixel_x = 1
     elif roll == 0:
         pr_pixel_x = 2
-    elif roll == 5:
+    elif roll < 60:
         pr_pixel_x = 3
     else:
         pr_pixel_x = 4 #right
     
-    if pitch == 20: #forward
+    if pitch > 30: #forward
         pr_pixel_y = 0
-    elif pitch == 5:
+    elif pitch > 0:
         pr_pixel_y = 1
     elif pitch == 0:
         pr_pixel_y = 2
-    elif pitch == -5:
+    elif pitch > -60:
         pr_pixel_y = 3
     else:
         pr_pixel_y = 4 #backward
@@ -89,35 +89,37 @@ while True:
     if button_a.is_pressed() and throttle >= 1: # Min value of throttle is 0
         throttle -= 1
         
-    if button_b.is_pressed() and throttle <= 60: # Max value of throttle is 100
+    if button_b.is_pressed() and throttle <= 80: # Max value of throttle is 100
         throttle += 1
         
 	
     axis_y = -accelerometer.get_y()
     axis_x = accelerometer.get_x()
-    print(axis_y)
+    
+    
     if axis_x > 300:
-        roll = 20 
+        roll = 15 
     elif axis_x > 150:
-        roll = 5
+        roll = 7
     elif axis_x > -150:
         roll = 0
     elif axis_x > -300:
-        roll = -5
+        roll = -7
     else:
-        roll = -20
+        roll = -15
 
     if axis_y > 300:
-        pitch = 20
+        pitch = 15
     elif axis_y > 150:
-        pitch = 5
+        pitch = 7
     elif axis_y > -150:
         pitch = 0
     elif axis_y > -300:
-        pitch = -5
+        pitch = -7
     else:
-        pitch = -20
+        pitch = -15
  
+    print("Pitch: ", pitch, " Roll: ", roll)
     # shake command
     if accelerometer.is_gesture("shake"):
         arm = 0
@@ -125,6 +127,6 @@ while True:
     
     ledDisplay()
     # 2=Mime 0=Drone, ____ , pitch, roll, throttle, arm
-    #radio.send("0" + "," + "0" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
-    radio.send("0" + "," + "1" + "," + "0" + "," + "0" + "," + str(throttle) + "," + str(arm))
-    sleep(50) 
+    radio.send("0" + "," + "1" + "," + str(pitch) + "," + str(roll) + "," + str(throttle) + "," + str(arm))
+    #radio.send("0" + "," + "1" + "," + "0" + "," + "0" + "," + str(throttle) + "," + str(arm))
+    sleep(10) 
