@@ -5,6 +5,15 @@ micro-controller called a Micro:bit. Flying the drone requires the use of two Mi
 as a controller and the other is attached to the drone itself. Flying the drone involves writing
 commands from the Micro:bit on the drone to an attached flight control board.
 
+## Communication Between Drone and Controller:
+![Image](given_code/Solutions-Bronze.jpg)
+
+## Wiring Setup for Tethered Drone
+![Image](given_code/box.png)
+
+## Drone Flying While Tethered
+![Image](given_code/drone_tethered.png)
+
 ## Links
 ### Documentation
 - [Drone Notes](https://docs.google.com/document/d/1mzUDkRhHnkvjLE0Sy-6LmkqDHaynlPdhWon43XGht84/edit#)
